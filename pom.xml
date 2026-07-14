@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.4</version>
+		<version>4.1.0</version>
 		<relativePath/>
 	</parent>
 
@@ -23,73 +23,26 @@
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- Libraries versions -->
-		<jackson.version>2.17.2</jackson.version>
-		<postgresql.version>42.7.3</postgresql.version>
-		<lombok.version>1.18.34</lombok.version>
-		<mapstruct.version>1.5.5.Final</mapstruct.version>
+		<!-- Libraries versions (Jackson УДАЛЁН — управляется Spring Boot) -->
+		<postgresql.version>42.7.4</postgresql.version>
+		<lombok.version>1.18.36</lombok.version>
+		<mapstruct.version>1.6.3</mapstruct.version>
 
 		<!-- Plugins versions -->
-		<checkstyle.version>3.1.2</checkstyle.version>
-		<spotbugs.version>4.8.5.0</spotbugs.version>
+		<checkstyle.plugin.version>3.5.0</checkstyle.plugin.version>
+		<checkstyle.version>10.20.1</checkstyle.version>
+		<spotbugs.plugin.version>4.8.6.0</spotbugs.plugin.version>
+		<spotbugs.version>4.8.6</spotbugs.version>
 		<jacoco.version>0.8.12</jacoco.version>
 	</properties>
 
-	<!-- ========== ДОБАВЛЕНО: РЕПОЗИТОРИИ ========== -->
-	<repositories>
-		<repository>
-			<id>central</id>
-			<url>https://repo.maven.apache.org/maven2</url>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>central</id>
-			<url>https://repo.maven.apache.org/maven2</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<url>https://repo.spring.io/milestone</url>
-		</pluginRepository>
-	</pluginRepositories>
-	<!-- ============================================= -->
-
 	<modules>
-		<module>stats/stats-dto</module>
-		<module>stats/stats-client</module>
-		<module>stats/stats-server</module>
-		<module>main-service</module>
+		<module>core</module>
+		<module>stats</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Jackson -->
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.datatype</groupId>
-				<artifactId>jackson-datatype-jsr310</artifactId>
-				<version>${jackson.version}</version>
-			</dependency>
-
 			<!-- Database -->
 			<dependency>
 				<groupId>org.postgresql</groupId>
@@ -184,7 +137,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>${checkstyle.version}</version>
+					<version>${checkstyle.plugin.version}</version>
 					<configuration>
 						<configLocation>checkstyle.xml</configLocation>
 						<failOnViolation>true</failOnViolation>
@@ -198,12 +151,19 @@
 							<phase>compile</phase>
 						</execution>
 					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>com.puppycrawl.tools</groupId>
+							<artifactId>checkstyle</artifactId>
+							<version>${checkstyle.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
 					<artifactId>spotbugs-maven-plugin</artifactId>
-					<version>${spotbugs.version}</version>
+					<version>${spotbugs.plugin.version}</version>
 					<configuration>
 						<effort>Max</effort>
 						<threshold>High</threshold>
@@ -215,6 +175,13 @@
 							</goals>
 						</execution>
 					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>com.github.spotbugs</groupId>
+							<artifactId>spotbugs</artifactId>
+							<version>${spotbugs.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 
 				<plugin>

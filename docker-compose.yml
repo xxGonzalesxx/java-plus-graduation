@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   # ========== БАЗЫ ДАННЫХ ==========
 
   stats-db:
-    image: postgres:16.1
+    image: postgres:18.4
     container_name: stats-db
     ports:
       - "5432:5432"
@@ -21,7 +19,7 @@ services:
       - stats-db-data:/var/lib/postgresql/data
 
   ewm-db:
-    image: postgres:16.1
+    image: postgres:18.4
     container_name: ewm-db
     ports:
       - "5433:5432"
@@ -36,6 +34,7 @@ services:
       retries: 10
     volumes:
       - ewm-db-data:/var/lib/postgresql/data
+
 volumes:
   stats-db-data:
   ewm-db-data:
