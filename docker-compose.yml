@@ -1,6 +1,4 @@
 services:
-  # ========== БАЗЫ ДАННЫХ ==========
-
   stats-db:
     image: postgres:18.4
     container_name: stats-db
@@ -16,7 +14,7 @@ services:
       interval: 5s
       retries: 10
     volumes:
-      - stats-db-data:/var/lib/postgresql/data
+      - stats-db-data:/var/lib/postgresql
 
   ewm-db:
     image: postgres:18.4
@@ -33,7 +31,7 @@ services:
       interval: 5s
       retries: 10
     volumes:
-      - ewm-db-data:/var/lib/postgresql/data
+      - ewm-db-data:/var/lib/postgresql
 
 volumes:
   stats-db-data:
