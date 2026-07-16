@@ -27,7 +27,7 @@
 
 		<spring-cloud.version>2025.1.2</spring-cloud.version>
 
-		<!-- Libraries versions (Jackson УДАЛЁН — управляется Spring Boot) -->
+		<!-- Libraries versions -->
 		<postgresql.version>42.7.4</postgresql.version>
 		<lombok.version>1.18.36</lombok.version>
 		<mapstruct.version>1.6.3</mapstruct.version>

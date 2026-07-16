@@ -8,6 +8,9 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -25,20 +28,39 @@ public class StatClient {
 
     private final DiscoveryClient discoveryClient;
     private final RestClient restClient;
+    private final RetryTemplate retryTemplate;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public StatClient(DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
         this.restClient = RestClient.builder().build();
+        this.retryTemplate = createRetryTemplate();
+    }
+
+    private static RetryTemplate createRetryTemplate() {
+        RetryTemplate retryTemplate = new RetryTemplate();
+
+        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+        backOffPolicy.setBackOffPeriod(3000L);
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+
+        MaxAttemptsRetryPolicy retryPolicy = new MaxAttemptsRetryPolicy();
+        retryPolicy.setMaxAttempts(3);
+        retryTemplate.setRetryPolicy(retryPolicy);
+
+        return retryTemplate;
     }
 
     private String resolveBaseUrl() {
-        List<ServiceInstance> instances = discoveryClient.getInstances(STATS_SERVICE_ID);
-        if (instances.isEmpty()) {
-            throw new IllegalStateException("Сервис статистики не найден в Eureka: " + STATS_SERVICE_ID);
-        }
-        ServiceInstance instance = instances.get(0);
-        return "http://" + instance.getHost() + ":" + instance.getPort();
+        return retryTemplate.execute(ctx -> {
+            List<ServiceInstance> instances = discoveryClient.getInstances(STATS_SERVICE_ID);
+            if (instances.isEmpty()) {
+                throw new IllegalStateException(
+                        "Сервис статистики не найден в Eureka: " + STATS_SERVICE_ID);
+            }
+            ServiceInstance instance = instances.getFirst();
+            return "http://" + instance.getHost() + ":" + instance.getPort();
+        });
     }
 
     public void hit(HitDto hitDto) {
@@ -50,13 +72,11 @@ public class StatClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.info("Failed to connect to stat service");
+            log.warn("Не удалось отправить hit в сервис статистики", e);
         }
     }
 
     public List<StatsDto> get(ParamDto paramDto) {
-        List<StatsDto> stats;
-
         Optional<List<String>> uris = (paramDto.uris() == null || paramDto.uris().isEmpty())
                 ? Optional.empty()
                 : Optional.of(paramDto.uris());
@@ -70,16 +90,15 @@ public class StatClient {
                     .build()
                     .toUri();
 
-            stats = restClient.get()
+            return restClient.get()
                     .uri(uri)
                     .header("Content-Type", "application/json")
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {
                     });
         } catch (Exception e) {
-            log.info("Failed to connect to stat service");
-            stats = List.of(new StatsDto("ewm-main-service", "/fake-uri", 0L));
+            log.warn("Не удалось получить статистику из сервиса статистики", e);
+            return List.of();
         }
-        return stats;
     }
 }
