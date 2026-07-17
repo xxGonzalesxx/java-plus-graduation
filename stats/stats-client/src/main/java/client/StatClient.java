@@ -4,6 +4,7 @@ import ewm.HitDto;
 import ewm.ParamDto;
 import ewm.StatsDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,21 +32,24 @@ public class StatClient {
     private final RetryTemplate retryTemplate;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public StatClient(DiscoveryClient discoveryClient) {
+    public StatClient(
+            DiscoveryClient discoveryClient,
+            @Value("${stats-client.retry.backoff-period:3000}") long backOffPeriod,
+            @Value("${stats-client.retry.max-attempts:3}") int maxAttempts) {
         this.discoveryClient = discoveryClient;
         this.restClient = RestClient.builder().build();
-        this.retryTemplate = createRetryTemplate();
+        this.retryTemplate = createRetryTemplate(backOffPeriod, maxAttempts);
     }
 
-    private static RetryTemplate createRetryTemplate() {
+    private static RetryTemplate createRetryTemplate(long backOffPeriod, int maxAttempts) {
         RetryTemplate retryTemplate = new RetryTemplate();
 
         FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
-        backOffPolicy.setBackOffPeriod(3000L);
+        backOffPolicy.setBackOffPeriod(backOffPeriod);
         retryTemplate.setBackOffPolicy(backOffPolicy);
 
         MaxAttemptsRetryPolicy retryPolicy = new MaxAttemptsRetryPolicy();
-        retryPolicy.setMaxAttempts(3);
+        retryPolicy.setMaxAttempts(maxAttempts);
         retryTemplate.setRetryPolicy(retryPolicy);
 
         return retryTemplate;
