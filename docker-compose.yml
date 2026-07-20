@@ -33,6 +33,25 @@ services:
     volumes:
       - ewm-db-data:/var/lib/postgresql
 
+    # ========== НОВАЯ БД ДЛЯ CATEGORY-SERVICE ==========
+  category-db:
+    image: postgres:18.4
+    container_name: category-db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=category
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d category -U user"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - category-db-data:/var/lib/postgresql
+
 volumes:
   stats-db-data:
   ewm-db-data:
+  category-db-data:
