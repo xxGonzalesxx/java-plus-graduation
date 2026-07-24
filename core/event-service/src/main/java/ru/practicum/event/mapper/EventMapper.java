@@ -7,6 +7,7 @@ import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserRequest;
 import ru.practicum.event.model.Event;
+import ru.practicum.user.mapper.UserMapper;
 
 @Mapper(componentModel = "spring",
         uses = {UserMapper.class},

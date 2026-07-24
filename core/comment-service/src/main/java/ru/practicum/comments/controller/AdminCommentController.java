@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.comments.dto.AdminCommentSearchFilter;
 import ru.practicum.comments.dto.CommentDto;
 import ru.practicum.comments.dto.UpdateCommentStatusRequest;
 import ru.practicum.comments.service.CommentService;
+import ru.practicum.comments.dto.AdminCommentSearchFilter;
 
 import java.util.List;
 

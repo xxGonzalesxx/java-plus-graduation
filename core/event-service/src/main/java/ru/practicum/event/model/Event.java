@@ -1,7 +1,7 @@
 package ru.practicum.event.model;
 
 import jakarta.persistence.*;
-import jdk.jfr.Category;
+import ru.practicum.category.model.Category;
 import lombok.Data;
 import org.apache.catalina.User;
 import ru.practicum.event.compilation.model.Compilation;

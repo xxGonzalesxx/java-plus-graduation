@@ -1,10 +1,6 @@
 package ru.practicum.user.controller;
 
-import ewm.comments.dto.CommentDto;
-import ewm.comments.dto.PostCommentDto;
-import ewm.comments.dto.PostCommentParam;
-import ewm.comments.dto.UpdateCommentParam;
-import ewm.comments.service.CommentService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

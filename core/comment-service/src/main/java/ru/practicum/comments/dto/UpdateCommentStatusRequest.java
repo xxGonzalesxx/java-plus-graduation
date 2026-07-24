@@ -7,4 +7,5 @@ public record UpdateCommentStatusRequest(
         @NotNull
         CommentStatus status
 ) {
+
 }

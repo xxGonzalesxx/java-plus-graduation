@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.compilation.dto.CompilationDto;
 import ru.practicum.event.compilation.dto.NewCompilationDto;
+import ru.practicum.event.compilation.dto.UpdateCompilationDto;
 import ru.practicum.event.compilation.service.CompilationService;
 
 

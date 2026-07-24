@@ -2,9 +2,9 @@ package ru.practicum.comments.service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import ewm.comments.dto.UpdateCommentParam;
-import ewm.event.repository.EventRepository;
-import ewm.user.repository.UserRepository;
+import ru.practicum.comments.dto.UpdateCommentParam;
+import ru.practicum.event.repository.EventRepository;
+import ru.practicum.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +22,8 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotAuthorized;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.event.model.Event;
+import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;

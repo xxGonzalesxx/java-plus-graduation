@@ -17,6 +17,7 @@ import ru.practicum.event.request.repository.ParticipationRequestRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;

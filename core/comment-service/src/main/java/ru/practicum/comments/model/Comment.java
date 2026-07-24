@@ -1,9 +1,9 @@
 package ru.practicum.comments.model;
 
 import jakarta.persistence.*;
-import jdk.jfr.Event;
+import ru.practicum.event.model.Event;
+import ru.practicum.user.model.User;
 import lombok.*;
-import org.apache.catalina.User;
 import org.hibernate.annotations.CurrentTimestamp;
 import java.time.LocalDateTime;
 

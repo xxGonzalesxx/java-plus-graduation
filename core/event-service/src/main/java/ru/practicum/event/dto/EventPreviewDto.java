@@ -5,6 +5,7 @@ import jdk.jfr.Category;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.user.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
