@@ -11,7 +11,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>category-service</artifactId>
+    <artifactId>user-service</artifactId>
 
     <dependencies>
         <!-- Spring Boot -->
@@ -37,8 +37,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
-
-        <!-- Open Feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -77,10 +75,17 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Для Exceptional из общего модуля Common -->
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>main-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

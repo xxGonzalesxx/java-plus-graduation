@@ -11,7 +11,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>category-service</artifactId>
+    <artifactId>event-service</artifactId>
 
     <dependencies>
         <!-- Spring Boot -->
@@ -38,7 +38,7 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- Open Feign -->
+        <!-- Open Feign (уже есть!) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
@@ -77,12 +77,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Common -->
         <dependency>
             <groupId>ru.practicum</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>stats-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ru.practicum</groupId>
+            <artifactId>stats-client</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

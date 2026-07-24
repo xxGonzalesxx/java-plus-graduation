@@ -1,4 +1,4 @@
-package ru.practicum.category;
+package ru.practicum.user;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,8 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(basePackages = "ru.practicum")
-public class CategoryServiceApplication {
+public class UserServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(CategoryServiceApplication.class,args);
+        SpringApplication.run(UserServiceApplication.class,args);
     }
 }

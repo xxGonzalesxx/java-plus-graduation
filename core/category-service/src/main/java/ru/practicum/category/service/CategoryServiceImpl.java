@@ -9,11 +9,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
-import ru.practicum.category.exception.ConflictException;
-import ru.practicum.category.exception.NotFoundException;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.exception.ConflictException;
+import ru.practicum.exception.NotFoundException;
 
 import java.util.List;
 
@@ -63,7 +63,6 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Обновление категории с id: {}, новое имя: {}", categoryId, categoryDto.name());
 
         Category category = existsCategory(categoryId);
-
         if (categoryRepository.existsByNameAndIdNot(categoryDto.name(), categoryId)) {
             log.warn("Уже существует категория с именем: {}", categoryDto.name());
             throw new ConflictException("Category with name=" + categoryDto.name() + " already exists");
