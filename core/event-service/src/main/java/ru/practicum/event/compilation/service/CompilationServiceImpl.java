@@ -14,8 +14,6 @@ import ru.practicum.event.compilation.model.Compilation;
 import ru.practicum.event.compilation.repository.CompilationRepository;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
-import ru.practicum.event.request.model.ConfirmedRequestCount;
-import ru.practicum.event.request.repository.ParticipationRequestRepository;
 import ru.practicum.event.service.EventService;
 import ru.practicum.exception.NotFoundException;
 

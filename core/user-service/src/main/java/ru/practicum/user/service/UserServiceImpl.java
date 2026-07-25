@@ -1,6 +1,5 @@
 package ru.practicum.user.service;
 
-
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

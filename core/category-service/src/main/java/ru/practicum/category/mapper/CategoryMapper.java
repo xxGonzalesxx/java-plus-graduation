@@ -1,7 +1,7 @@
 package ru.practicum.category.mapper;
 
 import org.mapstruct.Mapper;
-import ru.practicum.category.dto.CategoryDto;
+import ru.practicum.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.model.Category;
 

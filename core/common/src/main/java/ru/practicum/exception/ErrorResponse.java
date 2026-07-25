@@ -8,5 +8,5 @@ import java.time.LocalDateTime;
 public record ErrorResponse(HttpStatus status,
                             String reason,
                             String message,
-                            @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime timestamp) {
+                             @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime timestamp) {
 }

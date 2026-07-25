@@ -53,6 +53,13 @@
             <artifactId>spring-cloud-config-client</artifactId>
         </dependency>
 
+        <!-- ========== ДОБАВЛЕНО: OPENFEIGN ========== -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <!-- ========================================= -->
+
         <!-- База данных -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -76,7 +83,6 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <!-- версия убрана — берётся из родителя -->
         </dependency>
 
         <!-- Тестирование -->
@@ -128,7 +134,7 @@
                 </dependencies>
             </plugin>
 
-            <!-- Build Helper для добавления сгенерированных источников -->
+            <!-- Build Helper -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>

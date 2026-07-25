@@ -1,8 +1,8 @@
 package client;
 
-import ewm.HitDto;
-import ewm.ParamDto;
-import ewm.StatsDto;
+import ru.practicum.HitDto;
+import ru.practicum.ParamDto;
+import ru.practicum.StatsDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;

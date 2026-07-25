@@ -1,13 +1,9 @@
 package ru.practicum.event.model;
 
 import jakarta.persistence.*;
-import ru.practicum.category.model.Category;
 import lombok.Data;
-import org.apache.catalina.User;
-import ru.practicum.event.compilation.model.Compilation;
-import java.time.LocalDateTime;
-import java.util.List;
 
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
@@ -38,17 +34,11 @@ public class Event {
     private EventState state;
     private String title;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @Column(name = "category_id")
+    private Long categoryId;
 
-    @ManyToOne
-    @JoinColumn(name = "initiator_id")
-    private User initiator;
-
+    @Column(name = "initiator_id")
+    private Long initiatorId;
     @Embedded
     private Location location;
-
-    @ManyToMany(mappedBy = "events")
-    private List<Compilation> compilations;
 }

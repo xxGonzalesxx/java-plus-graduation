@@ -2,9 +2,6 @@ package ru.practicum.comments.service;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import ru.practicum.comments.dto.UpdateCommentParam;
-import ru.practicum.event.repository.EventRepository;
-import ru.practicum.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.comments.client.EventClient;
+import ru.practicum.comments.client.UserClient;
 import ru.practicum.comments.dto.*;
 import ru.practicum.comments.mapper.CommentMapper;
 import ru.practicum.comments.model.Comment;
@@ -22,8 +21,6 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotAuthorized;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
-import ru.practicum.event.model.Event;
-import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,15 +33,19 @@ import java.util.stream.StreamSupport;
 public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
-    private final EventRepository eventRepository;
+    private final UserClient userClient;
+    private final EventClient eventClient;
 
     @Override
     @Transactional
     public CommentDto create(PostCommentParam postCommentParam) {
+        existsUser(postCommentParam.authorId());
+        existsEvent(postCommentParam.eventId());
+
         Comment comment = commentMapper.postToComment(postCommentParam);
-        LocalDateTime eventDate = comment.getEvent().getEventDate();
         comment.setStatus(CommentStatus.PENDING);
+        comment.setCreatedOn(LocalDateTime.now());
+
         Comment savedComment = commentRepository.save(comment);
         log.info("Created new comment {}", savedComment);
         return commentMapper.toCommentDto(savedComment);
@@ -56,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = existsComment(updCommentParam.commentId());
         existsUser(updCommentParam.author());
 
-        if (!comment.getAuthor().getId().equals(updCommentParam.author())) {
+        if (!comment.getAuthorId().equals(updCommentParam.author())) {
             throw new NotAuthorized("Comment can be edited only by its author.");
         }
 
@@ -72,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     public void delete(Long userId, Long commentId) {
         Comment comment = existsComment(commentId);
 
-        if (!comment.getAuthor().getId().equals(userId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new NotAuthorized("Comment can be deleted only by its author.");
         }
 
@@ -81,13 +82,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> findAllByAuthor(Long userId) {
-        BooleanExpression byAuthorId = QComment.comment1.author.id.eq(userId);
+        BooleanExpression byAuthorId = QComment.comment1.authorId.eq(userId);
         Iterable<Comment> comments = commentRepository.findAll(byAuthorId);
-        List<CommentDto> commentsDto = StreamSupport.stream(comments.spliterator(), false)
+        return StreamSupport.stream(comments.spliterator(), false)
                 .map(commentMapper::toCommentDto)
                 .toList();
-
-        return commentsDto;
     }
 
     @Override
@@ -95,14 +94,12 @@ public class CommentServiceImpl implements CommentService {
         existsUser(userId);
         existsEvent(eventId);
 
-        BooleanExpression byEventAndAuthorId = QComment.comment1.author.id.eq(userId)
-                .and(QComment.comment1.event.id.eq(eventId));
+        BooleanExpression byEventAndAuthorId = QComment.comment1.authorId.eq(userId)
+                .and(QComment.comment1.eventId.eq(eventId));
         Iterable<Comment> comments = commentRepository.findAll(byEventAndAuthorId);
-        List<CommentDto> commentsDto = StreamSupport.stream(comments.spliterator(), false)
+        return StreamSupport.stream(comments.spliterator(), false)
                 .map(commentMapper::toCommentDto)
                 .toList();
-
-        return commentsDto;
     }
 
     @Override
@@ -110,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = existsComment(commentId);
         existsUser(userId);
 
-        if (!comment.getAuthor().getId().equals(userId)) {
+        if (!comment.getAuthorId().equals(userId)) {
             throw new NotAuthorized("Only author is allowed to see this comment");
         }
 
@@ -119,11 +116,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> getPublishedComments(CommentSearchParams params) {
-        // Проверка дат
-        if (params.rangeStart() != null && params.rangeEnd() != null) {
-            if (params.rangeStart().isAfter(params.rangeEnd())) {
-                throw new IllegalArgumentException("rangeStart не может быть позже rangeEnd");
-            }
+        if (params.rangeStart() != null && params.rangeEnd() != null
+                && params.rangeStart().isAfter(params.rangeEnd())) {
+            throw new IllegalArgumentException("rangeStart не может быть позже rangeEnd");
         }
 
         Sort sortBy = Sort.by("createdOn").descending();
@@ -132,7 +127,6 @@ public class CommentServiceImpl implements CommentService {
         }
         Pageable pageable = PageRequest.of(params.from() / params.size(), params.size(), sortBy);
 
-        // QueryDSL
         QComment qComment = QComment.comment1;
         BooleanBuilder predicate = new BooleanBuilder();
         predicate.and(qComment.status.eq(CommentStatus.PUBLISHED));
@@ -141,7 +135,7 @@ public class CommentServiceImpl implements CommentService {
             predicate.and(qComment.comment.containsIgnoreCase(params.text()));
         }
         if (params.eventId() != null) {
-            predicate.and(qComment.event.id.eq(params.eventId()));
+            predicate.and(qComment.eventId.eq(params.eventId()));
         }
         if (params.rangeStart() != null) {
             predicate.and(qComment.createdOn.goe(params.rangeStart()));
@@ -184,23 +178,18 @@ public class CommentServiceImpl implements CommentService {
         if (filter.text() != null && !filter.text().isBlank()) {
             predicate.and(qComment.comment.containsIgnoreCase(filter.text()));
         }
-
         if (filter.users() != null && !filter.users().isEmpty()) {
-            predicate.and(qComment.author.id.in(filter.users()));
+            predicate.and(qComment.authorId.in(filter.users()));
         }
-
         if (filter.eventId() != null) {
-            predicate.and(qComment.event.id.eq(filter.eventId()));
+            predicate.and(qComment.eventId.eq(filter.eventId()));
         }
-
         if (filter.rangeStart() != null) {
             predicate.and(qComment.createdOn.goe(filter.rangeStart()));
         }
-
         if (filter.rangeEnd() != null) {
             predicate.and(qComment.createdOn.loe(filter.rangeEnd()));
         }
-
         if (filter.status() != null) {
             predicate.and(qComment.status.eq(filter.status()));
         }
@@ -243,7 +232,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void deleteComment(Long commentId) {
         log.info("Admin delete comment id={}", commentId);
-        Comment comment = existsComment(commentId);
+        existsComment(commentId);
         commentRepository.deleteById(commentId);
     }
 
@@ -253,12 +242,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void existsUser(Long userId) {
-        userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException(String.format("User with id=%d was not found", userId)));
+        try {
+            userClient.getUserById(userId);
+        } catch (Exception e) {
+            throw new NotFoundException(String.format("User with id=%d was not found", userId));
+        }
     }
 
     private void existsEvent(Long eventId) {
-        eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+        try {
+            eventClient.getEventById(eventId);
+        } catch (Exception e) {
+            throw new NotFoundException(String.format("Event with id=%d was not found", eventId));
+        }
     }
 }

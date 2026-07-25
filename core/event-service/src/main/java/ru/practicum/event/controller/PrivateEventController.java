@@ -10,10 +10,6 @@ import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserRequest;
-import ru.practicum.event.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.event.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.event.request.dto.ParticipationRequestDto;
-import ru.practicum.event.request.service.ParticipationRequestService;
 import ru.practicum.event.service.EventService;
 
 

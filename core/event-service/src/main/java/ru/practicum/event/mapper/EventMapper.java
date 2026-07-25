@@ -1,6 +1,5 @@
 package ru.practicum.event.mapper;
 
-import jdk.jfr.Category;
 import org.mapstruct.*;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
@@ -28,14 +27,10 @@ public interface EventMapper {
     @Mapping(target = "category", ignore = true)
     Event toEvent(NewEventDto dto);
 
-    @Mapping(target = "category", source = "category", qualifiedByName = "category")
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "initiator", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
     void updateEventMap(UpdateEventUserRequest request, @MappingTarget Event event);
-
-    @Named("category")
-    default Category map(Long id) {
-        if (id == null) return null;
-        Category category = new Category();
-        category.setId(id);
-        return category;
-    }
 }
