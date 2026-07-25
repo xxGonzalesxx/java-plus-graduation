@@ -1,4 +1,4 @@
-package ru.practicum.request.request.service;
+package ru.practicum.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,13 +10,13 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.request.client.EventClient;
 import ru.practicum.request.client.UserClient;
 import ru.practicum.request.client.dto.EventInfo;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.request.model.ParticipationRequest;
+import ru.practicum.request.model.ParticipationStatus;
 import ru.practicum.request.repository.ParticipationRequestRepository;
 import ru.practicum.request.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.request.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.request.dto.ParticipationRequestDto;
-import ru.practicum.request.request.mapper.ParticipationRequestMapper;
-import ru.practicum.request.request.model.ParticipationRequest;
-import ru.practicum.request.request.model.ParticipationStatus;
+import ru.practicum.request.mapper.ParticipationRequestMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,10 +141,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, ParticipationStatus.CONFIRMED);
 
-        if (confirmedRequests >= event.participantLimit()) {
-            throw new ConflictException("The participant limit for this event has been reached");
-        }
-
         for (ParticipationRequest request : requests) {
             if (!request.getEventId().equals(eventId)) {
                 throw new ValidationException("Request does not belong to this event");
@@ -175,7 +171,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     }
 
     private void checkUserExists(Long userId) {
-        userClient.getUserById(userId);
+        try {
+            userClient.getUserById(userId);
+        } catch (Exception e) {
+            throw new NotFoundException("User with id=" + userId + " was not found");
+        }
     }
 
     private EventInfo getEventOrThrow(Long eventId) {

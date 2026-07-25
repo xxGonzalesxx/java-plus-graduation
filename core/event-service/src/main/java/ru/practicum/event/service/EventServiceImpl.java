@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -181,10 +182,6 @@ public class EventServiceImpl implements EventService {
         }
 
         paramFilter.and(event.state.eq(EventState.PUBLISHED));
-
-        // NOTE: фильтр onlyAvailable раньше делался JPA-подзапросом к ParticipationRequest
-        // в той же БД. Сейчас заявки живут в отдельном сервисе, поэтому подзапрос
-        // в БД невозможен — фильтруем после получения confirmedRequestsMap ниже.
 
         Sort sortEventDate = Sort.unsorted();
         if (eventParamDto.sort() != null && eventParamDto.sort().equalsIgnoreCase("EVENT_DATE")) {
@@ -424,7 +421,7 @@ public class EventServiceImpl implements EventService {
         return views.isEmpty() ? 0L : views.getFirst().hits();
     }
 
-    private Map<Long, Long> getViewsMap(List<Event> events, boolean unique) {
+    public Map<Long, Long> getViewsMap(List<Event> events, boolean unique) {
         try {
             String url = "/events/";
             List<String> uris = events.stream()
@@ -445,3 +442,87 @@ public class EventServiceImpl implements EventService {
                             Long.parseLong(lastPart);
                             return true;
                         } catch (NumberFormatException e) {
+                            return false;
+                        }
+                    })
+                    .collect(Collectors.toMap(
+                            statsDto -> Long.parseLong(statsDto.uri().substring(statsDto.uri().lastIndexOf("/") + 1)),
+                            StatsDto::hits
+                    ));
+        } catch (Exception e) {
+            log.warn("Не удалось получить статистику просмотров: {}", e.getMessage());
+            return Map.of();
+        }
+    }
+
+    private Long getConfirmedRequestsCount(Long eventId) {
+        try {
+            return requestClient.getConfirmedRequestsCountByEvent(eventId);
+        } catch (Exception e) {
+            log.warn("Не удалось получить количество подтверждённых заявок для события {}: {}", eventId, e.getMessage());
+            return 0L;
+        }
+    }
+
+    private Map<Long, Long> getConfirmedRequestsMap(List<Event> events) {
+        try {
+            List<Long> eventIds = events.stream().map(Event::getId).toList();
+            return requestClient.getConfirmedRequestsCount(eventIds);
+        } catch (Exception e) {
+            log.warn("Не удалось получить статистику подтверждённых заявок: {}", e.getMessage());
+            return Map.of();
+        }
+    }
+
+    private Map<Long, CategoryDto> getCategoryMap(List<Event> events) {
+        return events.stream()
+                .map(Event::getCategoryId)
+                .distinct()
+                .collect(Collectors.toMap(id -> id, this::getCategoryOrThrow));
+    }
+
+    private Map<Long, UserShortDto> getUserMap(List<Event> events) {
+        return events.stream()
+                .map(Event::getInitiatorId)
+                .distinct()
+                .collect(Collectors.toMap(id -> id, this::checkUserExists));
+    }
+
+    private void setCategoryAndInitiator(EventFullDto fullDto, Event event) {
+        fullDto.setCategory(getCategoryOrThrow(event.getCategoryId()));
+        fullDto.setInitiator(checkUserExists(event.getInitiatorId()));
+    }
+
+    private EventFullDto enrichFullDto(Event event, CategoryDto category, UserShortDto initiator) {
+        EventFullDto fullDto = eventMapper.toFullDto(event);
+        fullDto.setCategory(category);
+        fullDto.setInitiator(initiator);
+        fullDto.setConfirmedRequests(0L);
+        fullDto.setViews(0L);
+        return fullDto;
+    }
+
+    private List<EventShortDto> buildShortDtoList(List<Event> events, boolean uniqueViews) {
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(events);
+        Map<Long, Long> viewsMap = getViewsMap(events, uniqueViews);
+        return buildShortDtoListWithMaps(events, confirmedRequestsMap, viewsMap);
+    }
+
+    private List<EventShortDto> buildShortDtoListWithMaps(List<Event> events,
+                                                          Map<Long, Long> confirmedRequestsMap,
+                                                          Map<Long, Long> viewsMap) {
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+        Map<Long, UserShortDto> userMap = getUserMap(events);
+
+        return events.stream()
+                .map(e -> {
+                    EventShortDto shortDto = eventMapper.toShortDto(e);
+                    shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
+                    shortDto.setViews(viewsMap.getOrDefault(e.getId(), 0L));
+                    shortDto.setCategory(categoryMap.get(e.getCategoryId()));
+                    shortDto.setInitiator(userMap.get(e.getInitiatorId()));
+                    return shortDto;
+                })
+                .toList();
+    }
+}

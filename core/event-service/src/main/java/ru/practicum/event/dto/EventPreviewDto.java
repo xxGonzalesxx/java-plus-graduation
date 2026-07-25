@@ -1,11 +1,11 @@
 package ru.practicum.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jdk.jfr.Category;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.user.dto.UserShortDto;
+import ru.practicum.dto.CategoryDto;
+import ru.practicum.dto.UserShortDto;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class EventPreviewDto {
         private Long id;
         private String annotation;
-        private Category category;
+        private CategoryDto category;
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private LocalDateTime eventDate;

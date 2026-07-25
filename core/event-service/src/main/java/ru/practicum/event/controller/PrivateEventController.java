@@ -12,7 +12,6 @@ import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserRequest;
 import ru.practicum.event.service.EventService;
 
-
 import java.util.List;
 
 @Slf4j
@@ -22,7 +21,6 @@ import java.util.List;
 public class PrivateEventController {
 
     private final EventService eventService;
-    private final ParticipationRequestService participationRequestService;
 
     @GetMapping
     public List<EventShortDto> getEvents(
@@ -62,24 +60,5 @@ public class PrivateEventController {
     ) {
         log.info("PATCH /users/{}/events/{}: {}", userId, eventId, updateRequest);
         return eventService.updateEventPrivate(userId, eventId, updateRequest);
-    }
-
-    @GetMapping("/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventRequests(
-            @PathVariable Long userId,
-            @PathVariable Long eventId
-    ) {
-        log.info("GET /users/{}/events/{}/requests", userId, eventId);
-        return participationRequestService.getEventRequests(userId, eventId);
-    }
-
-    @PatchMapping("/{eventId}/requests")
-    public EventRequestStatusUpdateResult updateRequestStatus(
-            @PathVariable Long userId,
-            @PathVariable Long eventId,
-            @RequestBody EventRequestStatusUpdateRequest requestUpdate
-    ) {
-        log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
-        return participationRequestService.updateRequestStatus(userId, eventId, requestUpdate);
     }
 }

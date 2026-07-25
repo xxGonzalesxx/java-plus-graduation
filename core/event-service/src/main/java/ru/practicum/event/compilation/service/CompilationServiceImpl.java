@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.event.client.RequestClient;
 import ru.practicum.event.compilation.dto.CompilationDto;
 import ru.practicum.event.compilation.dto.NewCompilationDto;
 import ru.practicum.event.compilation.dto.UpdateCompilationDto;
@@ -27,10 +28,11 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
+
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;
     private final EventRepository eventRepository;
-    private final ParticipationRequestRepository requestRepository;
+    private final RequestClient requestClient;  // ✅ Feign-клиент
     private final EventService eventService;
 
     @Override
@@ -126,8 +128,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        Map<Long, Long> confirmedRequestsMap = requestRepository.findAllConfirmedRequests(eventIds).stream()
-                .collect(Collectors.toMap(ConfirmedRequestCount::eventId, ConfirmedRequestCount::count));
+        Map<Long, Long> confirmedRequestsMap = requestClient.getConfirmedRequestsCount(eventIds);
 
         Map<Long, Long> viewsMap = eventService.getViewsMap(events, false);
 
