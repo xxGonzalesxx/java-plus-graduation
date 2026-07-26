@@ -16,26 +16,22 @@ spring:
               uri: lb://REQUEST-SERVICE
               predicates:
                 - Path=/users/*/requests/**,/users/*/events/*/requests/**
-
             - id: comment-service
               uri: lb://COMMENT-SERVICE
               predicates:
                 - Path=/comments/**,/admin/comments/**,/users/*/comments/**,/users/*/events/*/comments/**
-
             - id: category-service
               uri: lb://CATEGORY-SERVICE
               predicates:
                 - Path=/categories/**,/admin/categories/**
-
+            - id: event-service
+              uri: lb://EVENT-SERVICE
+              predicates:
+                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
                 - Path=/users/**,/admin/users/**
-
-            - id: event-service
-              uri: lb://EVENT-SERVICE
-              predicates:
-                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**
 
 server:
   port: 8080

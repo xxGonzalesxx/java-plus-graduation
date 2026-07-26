@@ -16,29 +16,45 @@ services:
     volumes:
       - stats-db-data:/var/lib/postgresql
 
-  ewm-db:
+  user-db:
     image: postgres:18.4
-    container_name: ewm-db
+    container_name: user-db
     ports:
       - "5433:5432"
     environment:
-      - POSTGRES_DB=main
+      - POSTGRES_DB=user
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -q -d main -U user"]
+      test: ["CMD-SHELL", "pg_isready -q -d user -U user"]
       timeout: 5s
       interval: 5s
       retries: 10
     volumes:
-      - ewm-db-data:/var/lib/postgresql
+      - user-db-data:/var/lib/postgresql
 
-    # ========== НОВАЯ БД ДЛЯ CATEGORY-SERVICE ==========
+  event-db:
+    image: postgres:18.4
+    container_name: event-db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=event
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d event -U user"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - event-db-data:/var/lib/postgresql
+
   category-db:
     image: postgres:18.4
     container_name: category-db
     ports:
-      - "5434:5432"
+      - "5435:5432"
     environment:
       - POSTGRES_DB=category
       - POSTGRES_USER=user
@@ -51,7 +67,44 @@ services:
     volumes:
       - category-db-data:/var/lib/postgresql
 
+  comment-db:
+    image: postgres:18.4
+    container_name: comment-db
+    ports:
+      - "5436:5432"
+    environment:
+      - POSTGRES_DB=comment
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d comment -U user"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - comment-db-data:/var/lib/postgresql
+
+  request-db:
+    image: postgres:18.4
+    container_name: request-db
+    ports:
+      - "5437:5432"
+    environment:
+      - POSTGRES_DB=request
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d request -U user"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - request-db-data:/var/lib/postgresql
+
 volumes:
   stats-db-data:
-  ewm-db-data:
+  user-db-data:
+  event-db-data:
   category-db-data:
+  comment-db-data:
+  request-db-data:
