@@ -39,18 +39,27 @@ public class ErrorHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintValidationException(ConstraintViolationException e) {
-        final Violation item = e.getConstraintViolations().stream()
-                .map(violation -> new Violation(
-                        violation.getPropertyPath().toString(),
-                        violation.getMessage(),
-                        violation.getInvalidValue()
-                ))
-                .toList().getFirst();
-        log.warn("400: {}", item);
-        return new ErrorResponse(HttpStatus.BAD_REQUEST,
-                "Incorrectly made request.",
-                String.format("Field: %s. Error: %s. Value: %s", item.getFieldName(), item.getMessage(), item.getInvalidValue()),
-                LocalDateTime.now());
+        // ← ИСПРАВЛЕНО: безопасная обработка пустого списка
+        return e.getConstraintViolations().stream()
+                .findFirst()
+                .map(violation -> {
+                    String message = String.format("Field: %s. Error: %s. Value: %s",
+                            violation.getPropertyPath(),
+                            violation.getMessage(),
+                            violation.getInvalidValue());
+                    log.warn("400: {}", message);
+                    return new ErrorResponse(HttpStatus.BAD_REQUEST,
+                            "Incorrectly made request.",
+                            message,
+                            LocalDateTime.now());
+                })
+                .orElseGet(() -> {
+                    log.warn("400: ConstraintViolationException without violations: {}", e.getMessage());
+                    return new ErrorResponse(HttpStatus.BAD_REQUEST,
+                            "Incorrectly made request.",
+                            "Validation failed",
+                            LocalDateTime.now());
+                });
     }
 
     @ExceptionHandler
@@ -72,5 +81,15 @@ public class ErrorHandler {
     public ErrorResponse handleUnauthorized(final NotAuthorized e) {
         log.warn("401 {}", e.getMessage());
         return new ErrorResponse(HttpStatus.UNAUTHORIZED, "User is not allowed to do this change.", e.getMessage(), LocalDateTime.now());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAll(Exception e) {
+        log.error("Unhandled exception", e);
+        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal server error",
+                e.getMessage(),
+                LocalDateTime.now());
     }
 }

@@ -7,6 +7,6 @@ import ru.practicum.request.client.dto.UserInfo;
 
 @FeignClient(name = "user-service")
 public interface UserClient {
-    @GetMapping("/admin/users/{userId}")
+    @GetMapping("/internal/users/{userId}")
     UserInfo getUserById(@PathVariable Long userId);
 }
