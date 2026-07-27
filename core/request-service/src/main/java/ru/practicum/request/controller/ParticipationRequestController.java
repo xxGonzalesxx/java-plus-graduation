@@ -1,5 +1,6 @@
 package ru.practicum.request.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +36,6 @@ public class ParticipationRequestController {
         return requestService.cancelRequest(userId, requestId);
     }
 
-    // ---- эндпоинты для владельца события (перенесены из event-service) ----
-
     @GetMapping("/events/{eventId}/requests")
     public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
                                                           @PathVariable Long eventId) {
@@ -47,7 +46,7 @@ public class ParticipationRequestController {
     public EventRequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,
-            @RequestBody EventRequestStatusUpdateRequest requestUpdate) {
+            @Valid @RequestBody EventRequestStatusUpdateRequest requestUpdate) {
         return requestService.updateRequestStatus(userId, eventId, requestUpdate);
     }
 }

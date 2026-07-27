@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -41,7 +42,6 @@ public class ErrorHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintValidationException(ConstraintViolationException e) {
-        // ← ИСПРАВЛЕНО: безопасная обработка пустого списка
         return e.getConstraintViolations().stream()
                 .findFirst()
                 .map(violation -> {
@@ -105,6 +105,18 @@ public class ErrorHandler {
                 "Validation failed: " + e.getBindingResult().getFieldErrors().stream()
                         .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                         .collect(Collectors.joining("; ")),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleHttpMessageNotReadable(HttpMessageNotReadableException e) {
+        log.warn("400: Malformed or missing request body: {}", e.getMessage());
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Request body is missing or malformed",
+                e.getMessage(),
                 LocalDateTime.now()
         );
     }
