@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.user.dto.UserShortDto;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.dto.AdminUserParam;
 import ru.practicum.user.dto.UserDto;
@@ -16,6 +17,7 @@ import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.QUser;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
+
 
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -72,5 +74,11 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () ->  new NotFoundException(String.format("User with id=%d was not found", userId)));
         return user;
+    }
+
+    @Override
+    public UserShortDto getUserShort(Long id) {
+        User user = findById(id);
+        return userMapper.toShortDto(user);
     }
 }
