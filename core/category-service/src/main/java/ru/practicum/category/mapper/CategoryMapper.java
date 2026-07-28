@@ -9,7 +9,6 @@ import ru.practicum.category.model.Category;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
 
-    @Mapping(target = "id", ignore = true)
     CategoryDto toDto(Category category);
 
     @Mapping(target = "id", ignore = true)

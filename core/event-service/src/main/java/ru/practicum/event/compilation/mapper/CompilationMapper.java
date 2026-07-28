@@ -14,7 +14,6 @@ import ru.practicum.event.mapper.EventMapper;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CompilationMapper {
 
-    @Mapping(target = "id", ignore = true)
     CompilationDto compilationToDto(Compilation compilation);
 
     @Mapping(target = "id", ignore = true)
