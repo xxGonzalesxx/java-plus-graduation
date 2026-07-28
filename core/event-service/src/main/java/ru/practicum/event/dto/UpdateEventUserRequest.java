@@ -1,11 +1,11 @@
 package ru.practicum.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import ru.practicum.event.model.Location;
 import ru.practicum.event.model.StateAction;
+
 import java.time.LocalDateTime;
 
 public record UpdateEventUserRequest(
@@ -17,11 +17,12 @@ public record UpdateEventUserRequest(
         @Size(min = 20, max = 7000)
         String description,
 
-        @Future
+        @FutureOrPresent
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime eventDate,
 
-        Location location,
+        LocationDto location,
+
         Boolean paid,
 
         @PositiveOrZero

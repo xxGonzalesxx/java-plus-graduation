@@ -78,7 +78,6 @@ public class EventServiceImpl implements EventService {
         CategoryDto category = getCategoryOrThrow(dto.category());
 
         Event event = eventMapper.toEvent(dto);
-        event.setCategoryId(category.id());
         event.setInitiatorId(user.id());
         event.setState(EventState.PENDING);
         event.setCreatedOn(LocalDateTime.now());
@@ -133,6 +132,18 @@ public class EventServiceImpl implements EventService {
         }
 
         eventMapper.updateEventMap(dto, event);
+
+        if (dto.category() != null) {
+            CategoryDto category = getCategoryOrThrow(dto.category());
+            event.setCategoryId(category.id());
+        }
+
+        if (dto.location() != null) {
+            event.setLocation(new Location(
+                    dto.location().lat(),
+                    dto.location().lon()
+            ));
+        }
 
         if (dto.stateAction() != null) {
             switch (dto.stateAction()) {
@@ -333,8 +344,12 @@ public class EventServiceImpl implements EventService {
         if (dto.title() != null) {
             event.setTitle(dto.title());
         }
+
         if (dto.location() != null) {
-            event.setLocation(new Location(dto.location().getLat(), dto.location().getLon()));
+            event.setLocation(new Location(
+                    dto.location().lat(),
+                    dto.location().lon()
+            ));
         }
 
         if (dto.category() != null) {
@@ -356,8 +371,7 @@ public class EventServiceImpl implements EventService {
                 }
                 case REJECT_EVENT -> {
                     if (event.getState() == EventState.PUBLISHED) {
-                        throw new ConflictException("Cannot publish the event because " +
-                                "it's not in the right state: PUBLISHED");
+                        throw new ConflictException("Cannot reject the event because it's already published");
                     }
                     event.setState(EventState.CANCELED);
                     log.info("Event с id={} отклонено", eventId);
@@ -378,8 +392,6 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
-
-    // ---------- private helpers ----------
 
     private UserShortDto checkUserExists(Long userId) {
         try {

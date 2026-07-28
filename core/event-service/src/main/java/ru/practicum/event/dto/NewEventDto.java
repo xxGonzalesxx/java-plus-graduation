@@ -2,7 +2,6 @@ package ru.practicum.event.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import ru.practicum.event.model.Location;
 
 import java.time.LocalDateTime;
 
@@ -19,12 +18,12 @@ public record NewEventDto(
         String description,
 
         @NotNull
-        @Future
+        @FutureOrPresent
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime eventDate,
 
         @NotNull
-        Location location,
+        LocationDto location,
 
         Boolean paid,
 

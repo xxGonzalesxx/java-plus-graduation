@@ -32,7 +32,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;
     private final EventRepository eventRepository;
-    private final RequestClient requestClient;  // ✅ Feign-клиент
+    private final RequestClient requestClient;
     private final EventService eventService;
 
     @Override

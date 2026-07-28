@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import ru.practicum.event.model.AdminStateAction;
-import ru.practicum.event.model.Location;
 
 import java.time.LocalDateTime;
 
@@ -20,7 +19,7 @@ public record UpdateEventAdminRequest(
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime eventDate,
 
-        Location location,
+        LocationDto location,
 
         Boolean paid,
 

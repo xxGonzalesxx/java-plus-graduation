@@ -14,12 +14,15 @@ import ru.practicum.event.mapper.EventMapper;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CompilationMapper {
 
+    @Mapping(target = "id", ignore = true)
     CompilationDto compilationToDto(Compilation compilation);
 
-    @Mapping(target = "pinned", defaultExpression  = "java(false)")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "pinned", defaultExpression = "java(false)")
     @Mapping(target = "events", ignore = true)
     Compilation postDtoToCompilation(NewCompilationDto newCompilationDto);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "events", ignore = true)
     void updateDtoToCompilation(@MappingTarget Compilation compilation, UpdateCompilationDto dto);
 }
