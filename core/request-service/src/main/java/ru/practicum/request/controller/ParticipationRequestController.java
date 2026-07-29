@@ -22,7 +22,6 @@ public class ParticipationRequestController {
         return requestService.getRequestByUserId(userId);
     }
 
-    // ✅ ИСПРАВЛЕНО: POST /users/{userId}/events/{eventId}/requests
     @PostMapping("/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addRequest(@PathVariable Long userId,
