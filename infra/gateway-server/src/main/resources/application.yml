@@ -10,46 +10,40 @@ spring:
         service-id: config-server
     gateway:
       actuator:
-       enabled: true
-      server:
-        webflux:
-          routes:
-            - id: request-service
-              uri: lb://REQUEST-SERVICE
-              predicates:
-                - Path=/users/*/requests/**,/users/*/events/*/requests/**
-            - id: comment-service
-              uri: lb://COMMENT-SERVICE
-              predicates:
-                - Path=/comments/**,/admin/comments/**,/users/*/comments/**,/users/*/events/*/comments/**
-            - id: category-service
-              uri: lb://CATEGORY-SERVICE
-              predicates:
-                - Path=/categories/**,/admin/categories/**
-            - id: event-service
-              uri: lb://EVENT-SERVICE
-              predicates:
-                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
-            - id: user-service
-              uri: lb://USER-SERVICE
-              predicates:
-                - Path=/users/**,/admin/users/**
+        enabled: true
+      # ⬇️ ГЛАВНОЕ: УБРАЛ "server: webflux:"
+      routes:
+        - id: request-service
+          uri: lb://REQUEST-SERVICE
+          predicates:
+            - Path=/users/*/events/*/requests/**,/users/*/requests/**
+          filters:
+            - StripPrefix=0
 
-server:
-  port: 8080
+        - id: comment-service
+          uri: lb://COMMENT-SERVICE
+          predicates:
+            - Path=/users/*/events/*/comments/**,/users/*/comments/**,/admin/comments/**,/comments/**
+          filters:
+            - StripPrefix=0
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
+        - id: category-service
+          uri: lb://CATEGORY-SERVICE
+          predicates:
+            - Path=/categories/**,/admin/categories/**
+          filters:
+            - StripPrefix=0
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+        - id: event-service
+          uri: lb://EVENT-SERVICE
+          predicates:
+            - Path=/users/*/events/**,/events/**,/admin/events/**,/compilations/**,/admin/compilations/**
+          filters:
+            - StripPrefix=0
 
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: DEBUG
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/users/**,/admin/users/**
+          filters:
+            - StripPrefix=0
