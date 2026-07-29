@@ -35,4 +35,10 @@ public class PublicEventController {
         log.info("GET /event/{id}: id={}", id);
         return eventService.getEventByIdPublic(id, request);
     }
+
+    @GetMapping("/internal/{eventId}")
+    public EventFullDto getEventByIdForMicroservice(@PathVariable Long eventId) {
+        log.info("Internal API: get event by id = {}", eventId);
+        return eventService.getEventByIdForMicroservice(eventId);
+    }
 }

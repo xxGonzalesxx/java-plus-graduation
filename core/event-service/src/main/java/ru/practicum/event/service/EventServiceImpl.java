@@ -393,6 +393,31 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
 
+    @Override
+    public EventFullDto getEventByIdForMicroservice(Long eventId) {
+        log.info("Internal request: getting event by id = {}", eventId);
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        // ❗ НЕТ ПРОВЕРКИ НА PUBLISHED!
+        // Возвращаем событие в ЛЮБОМ статусе для внутренних вызовов
+
+        Map<Long, Long> confirmedRequestsCount = getConfirmedRequestsMap(List.of(event));
+        Map<Long, Long> viewsMap = getViewsMap(List.of(event), false);
+        Long views = viewsMap.getOrDefault(event.getId(), 0L);
+        Long confirmedRequests = confirmedRequestsCount.getOrDefault(event.getId(), 0L);
+
+        EventFullDto fullDto = eventMapper.toFullDto(event);
+        fullDto.setConfirmedRequests(confirmedRequests);
+        fullDto.setViews(views);
+        setCategoryAndInitiator(fullDto, event);
+
+        log.info("Internal: event {} returned with status {}", eventId, event.getState());
+
+        return fullDto;
+    }
+
     private UserShortDto checkUserExists(Long userId) {
         try {
             return userClient.getUser(userId);

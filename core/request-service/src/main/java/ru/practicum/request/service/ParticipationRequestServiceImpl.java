@@ -51,6 +51,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
         checkUserExists(userId);
 
+        // ✅ ИСПРАВЛЕНО: используем правильный метод
         EventInfo event = getEventOrThrow(eventId);
 
         long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, ParticipationStatus.CONFIRMED);
@@ -111,6 +112,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
         checkUserExists(userId);
 
+        // ✅ ИСПРАВЛЕНО: используем правильный метод
         EventInfo event = getEventOrThrow(eventId);
 
         if (!event.initiator().id().equals(userId)) {
@@ -130,6 +132,8 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId,
                                                               EventRequestStatusUpdateRequest requestUpdate) {
         checkUserExists(userId);
+
+        // ✅ ИСПРАВЛЕНО: используем правильный метод
         EventInfo event = getEventOrThrow(eventId);
 
         if (!event.initiator().id().equals(userId)) {
@@ -151,10 +155,11 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 throw new ConflictException("Request status must be PENDING");
             }
 
-            if ("REJECTED".equals(requestUpdate.status())) {
+            // ✅ ИСПРАВЛЕНО: сравниваем ParticipationStatus с ParticipationStatus
+            if (requestUpdate.status() == ParticipationStatus.REJECTED) {
                 request.setStatus(ParticipationStatus.REJECTED);
                 rejected.add(requestMapper.mapToRequestDto(request));
-            } else if ("CONFIRMED".equals(requestUpdate.status())) {
+            } else if (requestUpdate.status() == ParticipationStatus.CONFIRMED) {
                 if (event.participantLimit() == 0 || confirmedRequests < event.participantLimit()) {
                     request.setStatus(ParticipationStatus.CONFIRMED);
                     confirmed.add(requestMapper.mapToRequestDto(request));
@@ -180,9 +185,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
     }
 
+    // ✅ ИСПРАВЛЕНО: используем правильный метод EventClient
     private EventInfo getEventOrThrow(Long eventId) {
         try {
-            return eventClient.getEventById(eventId);
+            return eventClient.getEventByIdForMicroservice(eventId);  // ← ИСПРАВЛЕНО!
         } catch (Exception e) {
             throw new NotFoundException("Event with id=" + eventId + " was not found");
         }

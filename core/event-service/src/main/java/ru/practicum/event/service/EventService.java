@@ -27,4 +27,6 @@ public interface EventService {
     Map<Long, Long> getViewsMap(List<Event> events, boolean unique);
 
     Event existsEvent(Long eventId);
+
+    EventFullDto getEventByIdForMicroservice(Long eventId);
 }
