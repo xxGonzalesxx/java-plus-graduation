@@ -11,14 +11,19 @@ spring:
     gateway:
       actuator:
         enabled: true
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       server:
         webflux:
           routes:
-            - id: event-service           # ← ПЕРВЫЙ!
+            # ========== РУЧНЫЕ МАРШРУТЫ (для тестов) ==========
+            - id: event-service
               uri: lb://EVENT-SERVICE
               predicates:
                 - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
-            - id: request-service         # ← ВТОРОЙ!
+            - id: request-service
               uri: lb://REQUEST-SERVICE
               predicates:
                 - Path=/users/*/requests/**,/users/*/events/*/requests/**
@@ -33,7 +38,7 @@ spring:
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/users/**,/admin/users/**    # ← ИСПРАВЛЕНО!
+                - Path=/users/**,/admin/users/**
 
 server:
   port: 8080
