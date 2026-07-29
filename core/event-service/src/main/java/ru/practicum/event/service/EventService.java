@@ -29,4 +29,6 @@ public interface EventService {
     Event existsEvent(Long eventId);
 
     EventFullDto getEventByIdForMicroservice(Long eventId);
+
+    EventInfoDto getEventInfoById(Long eventId);
 }

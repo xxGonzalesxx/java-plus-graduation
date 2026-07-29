@@ -562,4 +562,20 @@ public class EventServiceImpl implements EventService {
                 })
                 .toList();
     }
+
+    @Override
+    public EventInfoDto getEventInfoById(Long eventId) {
+        log.info("Internal: getting event info by id = {}", eventId);
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        return new EventInfoDto(
+                event.getId(),
+                new EventInfoDto.Initiator(event.getInitiatorId()),
+                event.getState().name(),
+                event.getParticipantLimit(),
+                event.getRequestModeration()
+        );
+    }
 }
