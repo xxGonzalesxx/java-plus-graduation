@@ -25,6 +25,9 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
 
 management:
+  endpoint:
+    gateway:
+      access: unrestricted   # или read-only
   endpoints:
     web:
       exposure:

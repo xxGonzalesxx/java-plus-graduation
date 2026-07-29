@@ -12,29 +12,29 @@
 
     <artifactId>gateway-server</artifactId>
     <name>gateway-server</name>
-    <description>API Gateway - маршрутизация запросов к микросервисам</description>
 
     <dependencies>
 
-        <!-- ✅ Gateway WebFlux (правильный для Spring Cloud 2025.x) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
         </dependency>
 
-        <!-- Eureka -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Config Client -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- Логирование -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>

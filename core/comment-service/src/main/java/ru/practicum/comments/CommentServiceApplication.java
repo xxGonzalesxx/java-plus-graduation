@@ -8,8 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"ru.practicum", "client"})
 @EnableFeignClients(basePackages = {"ru.practicum.comments.client"})
+@ComponentScan(basePackages = {"ru.practicum"})
 public class CommentServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(CommentServiceApplication.class, args);
