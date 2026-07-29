@@ -14,31 +14,22 @@ spring:
       server:
         webflux:
           routes:
-            # ==================== REQUEST-SERVICE (ПЕРВЫЙ!) ====================
             - id: request-service
               uri: lb://REQUEST-SERVICE
               predicates:
-                - Path=/users/{userId}/events/{eventId}/requests/**,/users/{userId}/requests/**
-
-            # ==================== COMMENT-SERVICE ====================
+                - Path=/users/*/requests/**,/users/*/events/*/requests/**
             - id: comment-service
               uri: lb://COMMENT-SERVICE
               predicates:
-                - Path=/users/{userId}/events/{eventId}/comments/**,/users/{userId}/comments/**,/comments/**,/admin/comments/**
-
-            # ==================== EVENT-SERVICE (БЕЗ /users/*/events/**!) ====================
-            - id: event-service
-              uri: lb://EVENT-SERVICE
-              predicates:
-                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**
-
-            # ==================== CATEGORY-SERVICE ====================
+                - Path=/comments/**,/admin/comments/**,/users/*/comments/**,/users/*/events/*/comments/**
             - id: category-service
               uri: lb://CATEGORY-SERVICE
               predicates:
                 - Path=/categories/**,/admin/categories/**
-
-            # ==================== USER-SERVICE (САМЫЙ ОБЩИЙ - ПОСЛЕДНИЙ!) ====================
+            - id: event-service
+              uri: lb://EVENT-SERVICE
+              predicates:
+                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
