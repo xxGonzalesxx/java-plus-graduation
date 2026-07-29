@@ -16,7 +16,7 @@
 
     <dependencies>
 
-        <!--  ГЛАВНОЕ: Gateway -->
+        <!-- ✅ Gateway WebFlux (правильный для Spring Cloud 2025.x) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
@@ -34,12 +34,11 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- (опционально, но полезно для логов) -->
+        <!-- Логирование -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
-
 
     </dependencies>
 

@@ -9,36 +9,12 @@ spring:
         enabled: true
         service-id: config-server
     gateway:
-      actuator:
-        enabled: true
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       server:
         webflux:
-          routes:
-            # ========== РУЧНЫЕ МАРШРУТЫ (для тестов) ==========
-            - id: event-service
-              uri: lb://EVENT-SERVICE
-              predicates:
-                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
-            - id: request-service
-              uri: lb://REQUEST-SERVICE
-              predicates:
-                - Path=/users/*/requests/**,/users/*/events/*/requests/**
-            - id: comment-service
-              uri: lb://COMMENT-SERVICE
-              predicates:
-                - Path=/comments/**,/admin/comments/**,/users/*/comments/**,/users/*/events/*/comments/**
-            - id: category-service
-              uri: lb://CATEGORY-SERVICE
-              predicates:
-                - Path=/categories/**,/admin/categories/**
-            - id: user-service
-              uri: lb://USER-SERVICE
-              predicates:
-                - Path=/users/**,/admin/users/**
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
 
 server:
   port: 8080
