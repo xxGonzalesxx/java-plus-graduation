@@ -14,7 +14,11 @@ spring:
       server:
         webflux:
           routes:
-            - id: request-service
+            - id: event-service           # ← ПЕРВЫЙ!
+              uri: lb://EVENT-SERVICE
+              predicates:
+                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
+            - id: request-service         # ← ВТОРОЙ!
               uri: lb://REQUEST-SERVICE
               predicates:
                 - Path=/users/*/requests/**,/users/*/events/*/requests/**
@@ -26,14 +30,10 @@ spring:
               uri: lb://CATEGORY-SERVICE
               predicates:
                 - Path=/categories/**,/admin/categories/**
-            - id: event-service
-              uri: lb://EVENT-SERVICE
-              predicates:
-                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
             - id: user-service
               uri: lb://USER-SERVICE
               predicates:
-                - Path=/users/**,/admin/users/**
+                - Path=/users/**,/admin/users/**    # ← ИСПРАВЛЕНО!
 
 server:
   port: 8080
