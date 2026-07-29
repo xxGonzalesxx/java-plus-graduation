@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.category.client.EventClient;
 import ru.practicum.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
@@ -24,6 +25,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final EventClient eventClient;
 
     @Override
     @Transactional
@@ -50,6 +52,10 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (!categoryRepository.existsById(categoryId)) {
             throw new ConflictException("Category with id=" + categoryId + " was not found");
+        }
+
+        if (eventClient.existsByCategoryId(categoryId)) {
+            throw new ConflictException("The category is not empty and contains events");
         }
 
         categoryRepository.deleteById(categoryId);
