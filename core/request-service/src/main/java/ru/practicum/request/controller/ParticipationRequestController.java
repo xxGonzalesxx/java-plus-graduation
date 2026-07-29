@@ -9,40 +9,40 @@ import ru.practicum.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
 
-
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/{userId}")
+@RequestMapping("/users")
 public class ParticipationRequestController {
     private final ParticipationRequestService requestService;
 
-    @GetMapping("/requests")
+    @GetMapping("/{userId}/requests")
     public List<ParticipationRequestDto> getRequestByUserId(@PathVariable Long userId) {
         return requestService.getRequestByUserId(userId);
     }
 
-    @PostMapping("/requests")
+    // ✅ ИСПРАВЛЕНО: POST /users/{userId}/events/{eventId}/requests
+    @PostMapping("/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addRequest(@PathVariable Long userId,
-                                              @RequestParam Long eventId) {
+                                              @PathVariable Long eventId) {  // ← eventId из PATH!
         return requestService.addRequest(userId, eventId);
     }
 
-    @PatchMapping("/requests/{requestId}/cancel")
+    @PatchMapping("/{userId}/requests/{requestId}/cancel")
     public ParticipationRequestDto cancelRequest(@PathVariable Long userId,
                                                  @PathVariable Long requestId) {
         return requestService.cancelRequest(userId, requestId);
     }
 
-    @GetMapping("/events/{eventId}/requests")
+    @GetMapping("/{userId}/events/{eventId}/requests")
     public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
                                                           @PathVariable Long eventId) {
         return requestService.getEventRequests(userId, eventId);
     }
 
-    @PatchMapping("/events/{eventId}/requests")
+    @PatchMapping("/{userId}/events/{eventId}/requests")
     public EventRequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,

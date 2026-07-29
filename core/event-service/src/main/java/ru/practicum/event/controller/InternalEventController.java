@@ -20,6 +20,7 @@ public class InternalEventController {
 
     private final EventRepository eventRepository;
     private final EventService eventService;
+
     @GetMapping("/exists-by-category")
     public boolean existsByCategoryId(@RequestParam Long categoryId) {
         log.info("Checking if category {} has events", categoryId);
