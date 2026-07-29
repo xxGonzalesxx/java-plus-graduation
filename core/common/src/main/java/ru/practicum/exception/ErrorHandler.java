@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -117,6 +118,18 @@ public class ErrorHandler {
                 HttpStatus.BAD_REQUEST,
                 "Request body is missing or malformed",
                 e.getMessage(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingServletRequestParameter(MissingServletRequestParameterException e) {
+        log.warn("400: Missing required parameter: {}", e.getMessage());
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                String.format("Required parameter '%s' of type %s is missing", e.getParameterName(), e.getParameterType()),
                 LocalDateTime.now()
         );
     }

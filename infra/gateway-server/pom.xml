@@ -16,29 +16,30 @@
 
     <dependencies>
 
-        <!-- API Gateway (реактивный, на WebFlux/Netty) -->
+        <!--  ГЛАВНОЕ: Gateway -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
         </dependency>
 
-        <!-- Eureka Client: регистрация и обнаружение сервисов -->
+        <!-- Eureka -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Config Client: получение настроек с config-server -->
+        <!-- Config Client -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- Actuator: health-эндпоинты, полезно для discovery/мониторинга -->
+        <!-- (опционально, но полезно для логов) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
+            <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
+
 
     </dependencies>
 
