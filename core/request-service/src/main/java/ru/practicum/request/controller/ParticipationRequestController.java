@@ -17,6 +17,14 @@ import java.util.List;
 public class ParticipationRequestController {
     private final ParticipationRequestService requestService;
 
+    @PostMapping("/{userId}/requests")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationRequestDto addRequest(@PathVariable Long userId,
+                                              @RequestParam Long eventId) {
+        return requestService.addRequest(userId, eventId);
+    }
+
+    // Существующие методы:
     @GetMapping("/{userId}/requests")
     public List<ParticipationRequestDto> getRequestByUserId(@PathVariable Long userId) {
         return requestService.getRequestByUserId(userId);
@@ -24,8 +32,8 @@ public class ParticipationRequestController {
 
     @PostMapping("/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto addRequest(@PathVariable Long userId,
-                                              @PathVariable Long eventId) {  // ← eventId из PATH!
+    public ParticipationRequestDto addRequestDirect(@PathVariable Long userId,
+                                                    @PathVariable Long eventId) {
         return requestService.addRequest(userId, eventId);
     }
 
