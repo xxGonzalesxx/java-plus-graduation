@@ -33,7 +33,7 @@ public class InternalRequestController {
         return requestService.getRequestsByEventId(eventId);
     }
 
-    @PatchMapping
+    @PostMapping
     public EventRequestStatusUpdateResult updateRequests(
             @RequestBody EventRequestStatusUpdateRequest request) {
         // Обновляем статусы запросов (для внутреннего использования)
