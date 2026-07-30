@@ -7,6 +7,7 @@ import ru.practicum.dto.UserShortDto;
 
 @FeignClient(name = "user-service")
 public interface UserClient {
+
     @GetMapping("/internal/users/{userId}")
     UserShortDto getUser(@PathVariable("userId") Long userId);
 }

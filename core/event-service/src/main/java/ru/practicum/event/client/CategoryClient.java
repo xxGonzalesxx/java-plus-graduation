@@ -7,6 +7,7 @@ import ru.practicum.dto.CategoryDto;
 
 @FeignClient(name = "category-service")
 public interface CategoryClient {
+
     @GetMapping("/categories/{catId}")
     CategoryDto getCategoryById(@PathVariable Long catId);
 }

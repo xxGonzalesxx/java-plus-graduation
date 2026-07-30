@@ -38,6 +38,5 @@ public interface EventService {
 
     List<ParticipationRequestDto> getRequestsOfEvent(Long userId, Long eventId);
 
-    // ✅ ДОБАВИТЬ ЭТОТ МЕТОД!
     EventRequestStatusUpdateResult patchRequestsStatusOfEvent(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 }

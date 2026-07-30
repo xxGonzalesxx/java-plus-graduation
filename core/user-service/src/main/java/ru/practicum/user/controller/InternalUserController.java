@@ -12,6 +12,7 @@ import ru.practicum.user.service.UserService;
 @RequiredArgsConstructor
 @RequestMapping("/internal/users")
 public class InternalUserController {
+
     private final UserService userService;
 
     @GetMapping("/{id}")

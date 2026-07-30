@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ParticipationRequestService {
+
     List<ParticipationRequestDto> getRequestByUserId(Long userId);
 
     List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId);
@@ -18,7 +19,6 @@ public interface ParticipationRequestService {
 
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest requestUpdate);
 
-    // ---- internal, для Feign-вызовов из других сервисов ----
     Map<Long, Long> getConfirmedRequestsCountMap(List<Long> eventIds);
 
     Long getConfirmedRequestsCountForEvent(Long eventId);

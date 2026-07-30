@@ -7,6 +7,7 @@ import ru.practicum.request.client.dto.EventInfo;
 
 @FeignClient(name = "event-service")
 public interface EventClient {
+
     @GetMapping("/events/internal/{eventId}")
     EventInfo getEventByIdForMicroservice(@PathVariable Long eventId);
 }

@@ -1,18 +1,18 @@
 package ru.practicum.category.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.client.EventClient;
-import ru.practicum.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.dto.CategoryDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
@@ -23,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
+
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final EventClient eventClient;
@@ -62,7 +63,6 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Категория с id {} удалена", categoryId);
     }
 
-    // имя категории должно быть уникальным
     @Override
     @Transactional
     public CategoryDto updateCategory(Long categoryId, NewCategoryDto categoryDto) {

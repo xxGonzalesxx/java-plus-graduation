@@ -6,6 +6,7 @@ import ru.practicum.category.dto.NewCategoryDto;
 import java.util.List;
 
 public interface CategoryService {
+
     CategoryDto addCategory(NewCategoryDto newCategoryDto);
 
     void deleteCategoryById(Long categoryId);

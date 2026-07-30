@@ -20,6 +20,7 @@ import java.util.List;
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class PublicEventController {
+
     private final EventService eventService;
 
     @GetMapping

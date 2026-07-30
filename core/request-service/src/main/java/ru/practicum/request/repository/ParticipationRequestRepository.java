@@ -7,6 +7,7 @@ import ru.practicum.model.ParticipationStatus;
 import java.util.List;
 
 public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
+
     List<ParticipationRequest> findByRequesterId(Long requesterId);
 
     List<ParticipationRequest> findByEventId(Long eventId);

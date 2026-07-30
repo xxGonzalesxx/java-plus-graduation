@@ -8,6 +8,7 @@ import ru.practicum.user.model.User;
 import java.util.List;
 
 public interface UserService {
+
     UserDto create(UserPostDto userPostDto);
 
     List<UserDto> findAll(AdminUserParam params);

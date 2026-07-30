@@ -403,9 +403,6 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        // ❗ НЕТ ПРОВЕРКИ НА PUBLISHED!
-        // Возвращаем событие в ЛЮБОМ статусе для внутренних вызовов
-
         Map<Long, Long> confirmedRequestsCount = getConfirmedRequestsMap(List.of(event));
         Map<Long, Long> viewsMap = getViewsMap(List.of(event), false);
         Long views = viewsMap.getOrDefault(event.getId(), 0L);
