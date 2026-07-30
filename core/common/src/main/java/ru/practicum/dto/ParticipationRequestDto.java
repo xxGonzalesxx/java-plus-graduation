@@ -1,7 +1,8 @@
-package ru.practicum.request.dto;
+package ru.practicum.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import ru.practicum.request.model.ParticipationStatus;
+import ru.practicum.model.ParticipationStatus;
+
 import java.time.LocalDateTime;
 
 public record ParticipationRequestDto(

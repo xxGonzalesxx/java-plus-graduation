@@ -1,4 +1,4 @@
-package ru.practicum.request.model;
+package ru.practicum.model;
 
 public enum ParticipationStatus {
     CONFIRMED,

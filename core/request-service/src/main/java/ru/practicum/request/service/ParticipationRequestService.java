@@ -1,8 +1,8 @@
 package ru.practicum.request.service;
 
-import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.dto.EventRequestStatusUpdateResult;
+import ru.practicum.dto.ParticipationRequestDto;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,6 @@ public interface ParticipationRequestService {
 
     List<ParticipationRequestDto> getRequestsByEventId(Long eventId);
 
-    // ✅ НУЖНО ДОБАВИТЬ:
     EventRequestStatusUpdateResult updateRequests(EventRequestStatusUpdateRequest request);
 
 

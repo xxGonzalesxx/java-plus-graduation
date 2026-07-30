@@ -2,9 +2,9 @@ package ru.practicum.event.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.dto.EventRequestStatusUpdateResult;
+import ru.practicum.dto.ParticipationRequestDto;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,6 @@ public interface RequestClient {
     @GetMapping("/internal/requests/event/{eventId}")
     List<ParticipationRequestDto> getRequestsByEventId(@PathVariable Long eventId);
 
-    // ✅ НУЖНО ДОБАВИТЬ:
     @PatchMapping("/internal/requests")
     EventRequestStatusUpdateResult updateRequests(@RequestBody EventRequestStatusUpdateRequest request);
 

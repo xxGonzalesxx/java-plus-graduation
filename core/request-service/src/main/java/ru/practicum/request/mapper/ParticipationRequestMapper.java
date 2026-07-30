@@ -2,7 +2,7 @@ package ru.practicum.request.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.model.ParticipationRequest;
 
 @Mapper(componentModel = "spring")

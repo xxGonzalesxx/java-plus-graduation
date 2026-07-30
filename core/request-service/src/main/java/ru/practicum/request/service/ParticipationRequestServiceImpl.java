@@ -10,11 +10,11 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.request.client.EventClient;
 import ru.practicum.request.client.UserClient;
 import ru.practicum.request.client.dto.EventInfo;
-import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.dto.EventRequestStatusUpdateResult;
+import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.model.ParticipationRequest;
-import ru.practicum.request.model.ParticipationStatus;
+import ru.practicum.model.ParticipationStatus;
 import ru.practicum.request.repository.ParticipationRequestRepository;
 import ru.practicum.request.mapper.ParticipationRequestMapper;
 

@@ -2,9 +2,9 @@ package ru.practicum.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.request.dto.EventRequestStatusUpdateResult;
-import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.dto.EventRequestStatusUpdateResult;
+import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
 
 import java.util.List;
@@ -33,7 +33,6 @@ public class InternalRequestController {
         return requestService.getRequestsByEventId(eventId);
     }
 
-    // ✅ НУЖНО ДОБАВИТЬ:
     @PatchMapping
     public EventRequestStatusUpdateResult updateRequests(
             @RequestBody EventRequestStatusUpdateRequest request) {
