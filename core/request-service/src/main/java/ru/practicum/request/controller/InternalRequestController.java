@@ -2,6 +2,9 @@ package ru.practicum.request.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
 
 import java.util.List;
@@ -22,5 +25,19 @@ public class InternalRequestController {
     @GetMapping("/confirmed-count/{eventId}")
     public Long getConfirmedRequestsCountByEvent(@PathVariable Long eventId) {
         return requestService.getConfirmedRequestsCountForEvent(eventId);
+    }
+
+    @GetMapping("/event/{eventId}")
+    public List<ParticipationRequestDto> getRequestsByEventId(@PathVariable Long eventId) {
+        // Возвращаем все запросы для события (для внутреннего использования)
+        return requestService.getRequestsByEventId(eventId);
+    }
+
+    // ✅ НУЖНО ДОБАВИТЬ:
+    @PatchMapping
+    public EventRequestStatusUpdateResult updateRequests(
+            @RequestBody EventRequestStatusUpdateRequest request) {
+        // Обновляем статусы запросов (для внутреннего использования)
+        return requestService.updateRequests(request);
     }
 }

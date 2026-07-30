@@ -27,6 +27,9 @@ import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -577,5 +580,71 @@ public class EventServiceImpl implements EventService {
                 event.getParticipantLimit(),
                 event.getRequestModeration()
         );
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsOfEvent(Long userId, Long eventId) {
+        log.info("Getting requests for event id={} by user id={}", eventId, userId);
+
+        // Проверяем, что пользователь существует
+        checkUserExists(userId);
+
+        // Проверяем, что событие существует
+        Event event = getEventOrThrow(eventId);
+
+        // Проверяем, что пользователь является инициатором события
+        if (!event.getInitiatorId().equals(userId)) {
+            throw new ConflictException("User is not the initiator of this event");
+        }
+
+        // Получаем запросы через RequestClient
+        try {
+            return requestClient.getRequestsByEventId(eventId);
+        } catch (Exception e) {
+            log.error("Failed to get requests for event {}: {}", eventId, e.getMessage());
+            throw new RuntimeException("Failed to get requests", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult patchRequestsStatusOfEvent(
+            Long userId,
+            Long eventId,
+            EventRequestStatusUpdateRequest request) {
+
+        log.info("Updating requests status for event id={} by user id={}", eventId, userId);
+
+        // Проверяем, что пользователь существует
+        checkUserExists(userId);
+
+        // Проверяем, что событие существует
+        Event event = getEventOrThrow(eventId);
+
+        // Проверяем, что пользователь является инициатором события
+        if (!event.getInitiatorId().equals(userId)) {
+            throw new ConflictException("User is not the initiator of this event");
+        }
+
+        // Проверяем, что событие опубликовано
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ConflictException("Event is not published");
+        }
+
+        // Проверяем лимит участников
+        if (event.getParticipantLimit() > 0) {
+            Long confirmedCount = getConfirmedRequestsCount(eventId);
+            if (confirmedCount >= event.getParticipantLimit()) {
+                throw new ConflictException("Participant limit has been reached");
+            }
+        }
+
+        // Обновляем статусы запросов через RequestClient
+        try {
+            return requestClient.updateRequests(request);
+        } catch (Exception e) {
+            log.error("Failed to update requests for event {}: {}", eventId, e.getMessage());
+            throw new RuntimeException("Failed to update requests", e);
+        }
     }
 }

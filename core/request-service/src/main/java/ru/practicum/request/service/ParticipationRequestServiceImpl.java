@@ -173,6 +173,69 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         return new EventRequestStatusUpdateResult(confirmed, rejected);
     }
 
+    @Override
+    public Map<Long, Long> getConfirmedRequestsCountMap(List<Long> eventIds) {
+        return eventIds.stream()
+                .collect(Collectors.toMap(
+                        id -> id,
+                        id -> requestRepository.countByEventIdAndStatus(id, ParticipationStatus.CONFIRMED)
+                ));
+    }
+
+    @Override
+    public Long getConfirmedRequestsCountForEvent(Long eventId) {
+        return requestRepository.countByEventIdAndStatus(eventId, ParticipationStatus.CONFIRMED);
+    }
+
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult updateRequests(EventRequestStatusUpdateRequest request) {
+        log.info("Updating requests statuses: {}", request);
+
+        List<ParticipationRequest> requests = requestRepository.findAllById(request.requestIds());
+
+        if (requests.size() != request.requestIds().size()) {
+            throw new NotFoundException("Some requests not found");
+        }
+
+        List<ParticipationRequestDto> confirmed = new ArrayList<>();
+        List<ParticipationRequestDto> rejected = new ArrayList<>();
+
+        for (ParticipationRequest req : requests) {
+            if (req.getStatus() != ParticipationStatus.PENDING) {
+                throw new ConflictException("Request " + req.getId() + " is not in PENDING status");
+            }
+
+            if (request.status() == ParticipationStatus.CONFIRMED) {
+                req.setStatus(ParticipationStatus.CONFIRMED);
+                confirmed.add(requestMapper.mapToRequestDto(req));
+            } else if (request.status() == ParticipationStatus.REJECTED) {
+                req.setStatus(ParticipationStatus.REJECTED);
+                rejected.add(requestMapper.mapToRequestDto(req));
+            }
+
+            requestRepository.save(req);
+        }
+
+        log.info("Updated {} confirmed and {} rejected requests", confirmed.size(), rejected.size());
+        return new EventRequestStatusUpdateResult(confirmed, rejected);
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsByEventId(Long eventId) {
+        log.info("Getting all requests for event id={}", eventId);
+
+        List<ParticipationRequest> requests = requestRepository.findByEventId(eventId);
+
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+
+        return requests.stream()
+                .map(requestMapper::mapToRequestDto)
+                .collect(Collectors.toList());
+    }
+
     private void checkUserExists(Long userId) {
         try {
             userClient.getUserById(userId);
@@ -193,19 +256,5 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             log.error("Error getting event {}: {}", eventId, e.getMessage(), e);
             throw new NotFoundException("Event with id=" + eventId + " was not found");
         }
-    }
-
-    @Override
-    public Map<Long, Long> getConfirmedRequestsCountMap(List<Long> eventIds) {
-        return eventIds.stream()
-                .collect(Collectors.toMap(
-                        id -> id,
-                        id -> requestRepository.countByEventIdAndStatus(id, ParticipationStatus.CONFIRMED)
-                ));
-    }
-
-    @Override
-    public Long getConfirmedRequestsCountForEvent(Long eventId) {
-        return requestRepository.countByEventIdAndStatus(eventId, ParticipationStatus.CONFIRMED);
     }
 }

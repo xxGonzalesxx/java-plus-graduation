@@ -22,4 +22,11 @@ public interface ParticipationRequestService {
     Map<Long, Long> getConfirmedRequestsCountMap(List<Long> eventIds);
 
     Long getConfirmedRequestsCountForEvent(Long eventId);
+
+    List<ParticipationRequestDto> getRequestsByEventId(Long eventId);
+
+    // ✅ НУЖНО ДОБАВИТЬ:
+    EventRequestStatusUpdateResult updateRequests(EventRequestStatusUpdateRequest request);
+
+
 }

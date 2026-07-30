@@ -3,6 +3,10 @@ package ru.practicum.event.service;
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.model.Event;
+import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.request.dto.ParticipationRequestDto;
+
 import java.util.List;
 import java.util.Map;
 
@@ -31,4 +35,9 @@ public interface EventService {
     EventFullDto getEventByIdForMicroservice(Long eventId);
 
     EventInfoDto getEventInfoById(Long eventId);
+
+    List<ParticipationRequestDto> getRequestsOfEvent(Long userId, Long eventId);
+
+    // ✅ ДОБАВИТЬ ЭТОТ МЕТОД!
+    EventRequestStatusUpdateResult patchRequestsStatusOfEvent(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 }
