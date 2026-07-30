@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.request.dto.NewRequestDto;
 import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
@@ -34,7 +35,7 @@ public class ParticipationRequestController {
         log.info("POST /users/{}/requests with eventId={}", userId, eventId);
 
         if (eventId == null) {
-            throw new IllegalArgumentException("eventId is required");
+            throw new ValidationException("eventId is required");
         }
 
         return requestService.addRequest(userId, eventId);

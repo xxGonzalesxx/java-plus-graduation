@@ -27,5 +27,4 @@ public interface ParticipationRequestService {
 
     EventRequestStatusUpdateResult updateRequests(EventRequestStatusUpdateRequest request);
 
-
 }

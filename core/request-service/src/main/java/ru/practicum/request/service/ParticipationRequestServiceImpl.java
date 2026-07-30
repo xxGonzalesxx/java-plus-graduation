@@ -67,7 +67,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("The event has not been published yet");
         }
 
-        if (event.participantLimit() != 0 && event.participantLimit() <= confirmedRequests) {
+        if (event.participantLimit() > 0 && confirmedRequests >= event.participantLimit()) {
             throw new ConflictException("The participant limit for this event has been reached");
         }
 
@@ -75,7 +75,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         request.setRequesterId(userId);
         request.setEventId(eventId);
 
-        if (!event.requestModeration() || event.participantLimit() == 0) {
+        if (event.participantLimit() == 0 || !event.requestModeration()) {
             request.setStatus(ParticipationStatus.CONFIRMED);
         } else {
             request.setStatus(ParticipationStatus.PENDING);
@@ -97,6 +97,10 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
         if (!request.getRequesterId().equals(userId)) {
             throw new ValidationException("You can only cancel your own request");
+        }
+
+        if (request.getStatus() != ParticipationStatus.PENDING) {
+            throw new ConflictException("Only PENDING requests can be cancelled");
         }
 
         request.setStatus(ParticipationStatus.CANCELED);
