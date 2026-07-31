@@ -11,11 +11,11 @@ spring:
             - id: request-service
               uri: lb://request-service
               predicates:
-                - Path=/users/*/requests/**,/users/*/events/*/requests/**
+                - Path=/users/*/requests/**
             - id: comment-service
               uri: lb://comment-service
               predicates:
-                - Path=/comments/**,/admin/comments/**,/users/*/comments/**,/users/*/events/*/comments/**
+                - Path=/comments/**,/admin/comments/**,/users/*/comments/**
             - id: category-service
               uri: lb://category-service
               predicates:
