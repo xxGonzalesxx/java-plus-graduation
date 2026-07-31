@@ -20,7 +20,6 @@ import ru.practicum.event.client.UserClient;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.model.EventState;
 import ru.practicum.event.model.Location;
 import ru.practicum.event.model.QEvent;
 import ru.practicum.event.repository.EventRepository;
@@ -30,6 +29,7 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
 import ru.practicum.dto.ParticipationRequestDto;
+import ru.practicum.model.EventState;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;

@@ -1,9 +1,11 @@
 package ru.practicum.request.client.dto;
 
+import ru.practicum.model.EventState;
+
 public record EventInfo(
         Long id,
         Initiator initiator,
-        String state,
+        EventState state,
         Integer participantLimit,
         Boolean requestModeration
 ) {

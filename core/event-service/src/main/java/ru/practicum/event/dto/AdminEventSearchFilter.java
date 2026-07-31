@@ -2,7 +2,7 @@ package ru.practicum.event.dto;
 
 import jakarta.validation.constraints.Min;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.event.model.EventState;
+import ru.practicum.model.EventState;
 import java.time.LocalDateTime;
 import java.util.List;
 

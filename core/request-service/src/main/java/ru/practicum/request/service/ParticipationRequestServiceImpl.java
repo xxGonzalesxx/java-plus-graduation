@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.model.EventState;
 import ru.practicum.request.client.EventClient;
 import ru.practicum.request.client.UserClient;
 import ru.practicum.request.client.dto.EventInfo;
@@ -63,7 +64,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
             throw new ConflictException("The initiator of the event cannot add a request to participate in their own event");
         }
 
-        if (!"PUBLISHED".equals(event.state())) {
+        if (event.state() != EventState.PUBLISHED) {
             throw new ConflictException("The event has not been published yet");
         }
 

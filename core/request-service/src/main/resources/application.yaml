@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: request-service
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.uuid}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings,metrics,loggers
+    enabled-by-default: true
+  endpoint:
+    health:
+      show-details: always
+    mappings:
+      enabled: true
+    metrics:
+      enabled: true
+    info:
+      enabled: true
