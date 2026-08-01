@@ -1,17 +1,20 @@
+server:
+  port: 9090
+
 spring:
+  application:
+    name: stats-server                        # ← добавлено
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/stats
+    url: jdbc:postgresql://stats-db:5432/stats   # ← исправлено
     username: user
     password: password
-
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
-
   sql:
     init:
       mode: always
@@ -24,3 +27,12 @@ stats-client:
   retry:
     backoff-period: 3000
     max-attempts: 3
+
+eureka:                                     # ← добавлен блок (если его не было)
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# TODO: Этот сервис будет удалён после миграции на новую рекомендательную систему

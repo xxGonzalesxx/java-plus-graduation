@@ -1,0 +1,60 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: analyzer-service
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/analyzer
+    username: analyzer
+    password: analyzer
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: analyzer-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      # value-deserializer будет добавлен позже (кастомный Avro)
+
+  grpc:
+    server:
+      port: 0
+
+app:
+  kafka:
+    topics:
+      user-actions: stats.user-actions.v1
+      events-similarity: stats.events-similarity.v1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    ru.practicum: DEBUG
+    org.springframework.kafka: INFO
+    org.hibernate.SQL: DEBUG
+
+format:
+  pattern:
+    datetime: yyyy-MM-dd HH:mm:ss

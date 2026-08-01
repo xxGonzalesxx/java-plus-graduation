@@ -36,6 +36,15 @@
 
 		<mapstruct.version>1.6.3</mapstruct.version>
 
+		<!-- Avro schema -->
+		<avro.version>1.12.1</avro.version>
+
+		<!-- Proto Version -->
+		<grpc.version>1.82.1</grpc.version>
+		<protobuf.version>3.25.8</protobuf.version>
+		<protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
+		<os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+
 		<!-- Plugins versions -->
 		<checkstyle.plugin.version>3.5.0</checkstyle.plugin.version>
 
@@ -52,21 +61,21 @@
 	<modules>
 		<module>core</module>
 		<module>stats</module>
-        <module>infra</module>
-    </modules>
+		<module>infra</module>
+	</modules>
 
 	<dependencyManagement>
 
 		<dependencies>
 
 			<!-- Spring Cloud -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-dependencies</artifactId>
-			<version>${spring-cloud.version}</version>
-			<type>pom</type>
-			<scope>import</scope>
-		</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
 			<!-- Database -->
 			<dependency>
@@ -94,6 +103,21 @@
 				<groupId>org.mapstruct</groupId>
 				<artifactId>mapstruct-processor</artifactId>
 				<version>${mapstruct.version}</version>
+			</dependency>
+
+			<!-- Avro: версия своя, Boot её не знает -->
+			<dependency>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro</artifactId>
+				<version>${avro.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-bom</artifactId>
+				<version>${grpc.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<!-- Internal modules -->
@@ -261,6 +285,16 @@
 					</executions>
 
 				</plugin>
+
+				<!-- Генерация Java-классов из Avro-схем (.avsc). Версия объявлена здесь,
+				     подключение с конкретными execution/sourceDirectory будет добавлено
+				     в модулях, где реально появятся .avsc-файлы (например, stats-dto). -->
+				<plugin>
+					<groupId>org.apache.avro</groupId>
+					<artifactId>avro-maven-plugin</artifactId>
+					<version>${avro.version}</version>
+				</plugin>
+
 			</plugins>
 		</pluginManagement>
 	</build>
