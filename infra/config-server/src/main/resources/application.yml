@@ -4,17 +4,20 @@ server:
 spring:
   application:
     name: config-server
+  profiles:
+    active: native                         # ← ДОБАВИТЬ ЭТУ СТРОКУ!
   cloud:
     config:
       server:
         native:
-          search-locations: classpath:/config
+          search-locations: classpath:/config/core/,classpath:/config/infra/,classpath:/config/stats/
+  main:
+    allow-bean-definition-overriding: true
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
   instance:
+    prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.uuid}
-
-spring.profiles.active: native

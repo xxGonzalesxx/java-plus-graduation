@@ -1,8 +1,6 @@
 package client;
 
-import ewm.HitDto;
-import ewm.ParamDto;
-import ewm.StatsDto;
+import ru.practicum.HitDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -15,6 +13,8 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.practicum.ParamDto;
+import ru.practicum.StatsDto;
 
 import java.net.URI;
 import java.time.format.DateTimeFormatter;

@@ -1,0 +1,26 @@
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: event-service
+              uri: lb://event-service
+              predicates:
+                - Path=/events/**,/admin/events/**,/compilations/**,/admin/compilations/**,/users/*/events/**
+            - id: request-service
+              uri: lb://request-service
+              predicates:
+                - Path=/users/*/requests/**
+            - id: comment-service
+              uri: lb://comment-service
+              predicates:
+                - Path=/comments/**,/admin/comments/**,/users/*/comments/**
+            - id: category-service
+              uri: lb://category-service
+              predicates:
+                - Path=/categories/**,/admin/categories/**
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/users/**,/admin/users/**

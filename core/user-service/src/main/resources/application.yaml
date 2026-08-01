@@ -1,0 +1,47 @@
+spring:
+  config:
+    import: "optional:configserver:"
+  application:
+    name: user-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fast: false
+      retry:
+        max-attempts: 6
+        initial-interval: 2000
+        max-interval: 5000
+
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
+    prefer-ip-address: true
+
+logging:
+  level:
+    ru:
+      practicum: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings,metrics,loggers
+    enabled-by-default: true
+  endpoint:
+    health:
+      show-details: always
+    mappings:
+      enabled: true
+    metrics:
+      enabled: true
+    info:
+      enabled: true
