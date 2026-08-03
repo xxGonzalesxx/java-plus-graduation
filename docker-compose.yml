@@ -193,7 +193,8 @@ services:
         ARTIFACT_NAME: config-server
     container_name: config-server
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SERVER_PORT: "8888"
     ports:
       - "8888:8888"
     networks:
