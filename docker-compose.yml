@@ -173,15 +173,12 @@ services:
         condition: service_healthy
     entrypoint: ["/bin/sh", "-c"]
     command: |
-      "
       echo 'Creating topics...'
       /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic stats.user-actions.v1 --partitions 3 --replication-factor 1
       /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic stats.events-similarity.v1 --partitions 3 --replication-factor 1
-
       echo 'Topics created successfully!'
       echo 'Listing topics:'
       /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --list
-      "
     networks:
       - explore-with-me
 
@@ -216,9 +213,7 @@ services:
         MODULE: infra/discovery-server
         ARTIFACT_NAME: discovery-server
     container_name: discovery-server
-    depends_on:
-      config-server:
-        condition: service_healthy
+    # depends_on config-server removed to avoid circular startup dependency
     environment:
       - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
     ports:
@@ -268,10 +263,11 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
     ports:
       - "8088:8088"
     networks:
@@ -290,10 +286,11 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
     ports:
       - "8089:8089"
     networks:
@@ -314,13 +311,14 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://analyzer-db:5432/analyzer
-      - SPRING_DATASOURCE_USERNAME=analyzer
-      - SPRING_DATASOURCE_PASSWORD=analyzer
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://analyzer-db:5432/analyzer"
+      SPRING_DATASOURCE_USERNAME: "analyzer"
+      SPRING_DATASOURCE_PASSWORD: "analyzer"
     ports:
       - "8090:8090"
     networks:
@@ -344,12 +342,12 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/user
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://user-db:5432/user"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
     networks:
       - explore-with-me
 
@@ -369,12 +367,12 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://category-db:5432/category
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://category-db:5432/category"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
     networks:
       - explore-with-me
 
@@ -398,14 +396,14 @@ services:
       analyzer-service:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://event-db:5432/event
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-      - GRPC_CLIENT_COLLECTOR_ADDRESS=discovery:///collector-service
-      - GRPC_CLIENT_ANALYZER_ADDRESS=discovery:///analyzer-service
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://event-db:5432/event"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector-service"
+      GRPC_CLIENT_ANALYZER_ADDRESS: "discovery:///analyzer-service"
     networks:
       - explore-with-me
 
@@ -427,13 +425,13 @@ services:
       collector-service:
         condition: service_started
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://request-db:5432/request
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-      - GRPC_CLIENT_COLLECTOR_ADDRESS=discovery:///collector-service
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://request-db:5432/request"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector-service"
     networks:
       - explore-with-me
 
@@ -453,12 +451,12 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://comment-db:5432/comment
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://comment-db:5432/comment"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
     networks:
       - explore-with-me
 
@@ -477,12 +475,12 @@ services:
       discovery-server:
         condition: service_healthy
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://stats-db:5432/stats"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
     ports:
       - "9090:9090"
     networks:
