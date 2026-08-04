@@ -8,7 +8,6 @@ spring:
     bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
-      # value-serializer будет добавлен в коде (CollectorAvroSerializer)
       acks: all
       retries: 3
 
@@ -27,6 +26,9 @@ eureka:
       defaultZone: http://discovery-server:8761/eureka/
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}   # ← ДОБАВИТЬ!
+    metadataMap:                                             # ← ДОБАВИТЬ!
+      grpcPort: ${local.grpc.port:${grpc.server.port:0}}    # ← ДОБАВИТЬ!
 
 logging:
   level:

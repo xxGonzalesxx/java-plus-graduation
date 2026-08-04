@@ -13,7 +13,6 @@ spring:
       # value-deserializer будет добавлен позже (кастомный Avro)
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
-      # value-serializer будет добавлен позже (кастомный Avro)
       acks: all
 
 app:
