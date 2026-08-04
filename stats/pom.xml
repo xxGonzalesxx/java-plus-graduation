@@ -18,9 +18,9 @@
         <module>stats-dto</module>
         <module>stats-server</module>
         <module>stats-proto</module>
-        <module>collector-service</module>
-        <module>aggregator-service</module>
-        <module>analyzer-service</module>
+        <module>collector</module>
+        <module>aggregator</module>
+        <module>analyzer</module>
     </modules>
 
 </project>

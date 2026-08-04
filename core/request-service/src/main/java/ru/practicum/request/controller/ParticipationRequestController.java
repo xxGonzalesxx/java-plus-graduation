@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.request.client.RecommendationClient;
 import ru.practicum.request.dto.NewRequestDto;
 import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
@@ -19,7 +20,9 @@ import java.util.List;
 @RequestMapping("/users")
 @Slf4j
 public class ParticipationRequestController {
+
     private final ParticipationRequestService requestService;
+    private final RecommendationClient recommendationClient;
 
     @PostMapping("/{userId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,6 +41,8 @@ public class ParticipationRequestController {
             throw new ValidationException("eventId is required");
         }
 
+        recommendationClient.sendRegister(userId, eventId);
+
         return requestService.addRequest(userId, eventId);
     }
 
@@ -52,6 +57,9 @@ public class ParticipationRequestController {
     public ParticipationRequestDto addRequestDirect(@PathVariable Long userId,
                                                     @PathVariable Long eventId) {
         log.info("POST /users/{}/events/{}/requests", userId, eventId);
+
+        recommendationClient.sendRegister(userId, eventId);
+
         return requestService.addRequest(userId, eventId);
     }
 

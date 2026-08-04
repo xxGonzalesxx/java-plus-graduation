@@ -52,7 +52,7 @@ public class RecommendationService {
                     .findSimilarEvents(action.getEventId());
 
             for (EventSimilarity sim : similarities) {
-                Long similarEventId = sim.getEventA() == action.getEventId()
+                Long similarEventId = sim.getEventA().equals(action.getEventId())
                         ? sim.getEventB() : sim.getEventA();
 
                 if (!userEventIds.contains(similarEventId)) {

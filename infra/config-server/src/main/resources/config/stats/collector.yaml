@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: collector-service
+    name: collector
   kafka:
     bootstrap-servers: kafka:29092
     producer:

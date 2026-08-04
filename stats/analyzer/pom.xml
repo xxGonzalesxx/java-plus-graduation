@@ -10,7 +10,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>analyzer-service</artifactId>
+    <artifactId>analyzer</artifactId>
 
     <dependencies>
         <dependency>

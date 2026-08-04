@@ -39,4 +39,17 @@ public interface EventService {
     List<ParticipationRequestDto> getRequestsOfEvent(Long userId, Long eventId);
 
     EventRequestStatusUpdateResult patchRequestsStatusOfEvent(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
+
+    // ========== НОВЫЕ МЕТОДЫ ДЛЯ РЕКОМЕНДАЦИЙ ==========
+
+    /**
+     * Получить список событий по списку ID (для рекомендаций)
+     */
+    List<EventShortDto> getEventsByIds(List<Long> eventIds);
+
+    /**
+     * Проверить, что пользователь участвовал в мероприятии
+     * (для лайка)
+     */
+    void validateUserParticipation(Long userId, Long eventId);
 }

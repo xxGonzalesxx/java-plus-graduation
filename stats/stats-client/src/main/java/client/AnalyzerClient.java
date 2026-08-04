@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class AnalyzerClient {
 
-    private static final String SERVICE_ID = "analyzer-service";
+    private static final String SERVICE_ID = "analyzer";
 
     private final GrpcChannelProvider channelProvider;
 
