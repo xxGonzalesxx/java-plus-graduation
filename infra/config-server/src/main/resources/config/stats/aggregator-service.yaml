@@ -10,10 +10,8 @@ spring:
       group-id: aggregator-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-      # value-deserializer будет добавлен в коде (UserActionDeserializer)
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
-      # value-serializer будет добавлен в коде (AggregatorAvroSerializer)
       acks: all
 
 app:

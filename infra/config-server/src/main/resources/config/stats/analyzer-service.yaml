@@ -26,7 +26,6 @@ spring:
       group-id: analyzer-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-      # value-deserializer будет добавлен в коде
 
 grpc:
   server:
@@ -38,15 +37,15 @@ app:
       user-actions: stats.user-actions.v1
       events-similarity: stats.events-similarity.v1
 
-eureka:                                 # ← добавлен блок
+eureka:
   client:
     service-url:
       defaultZone: http://discovery-server:8761/eureka/
   instance:
     prefer-ip-address: true
-    instance-id: ${spring.application.name}:${random.value}   # ← ДОБАВИТЬ
-    metadataMap: # ← ДОБАВИТЬ
-        grpcPort: ${local.grpc.port:${grpc.server.port:0}}    # ← ДОБАВИТЬ
+    instance-id: ${spring.application.name}:${random.value}
+    metadataMap:
+        grpcPort: ${local.grpc.port:${grpc.server.port:0}}
 
 logging:
   level:

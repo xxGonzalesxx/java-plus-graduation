@@ -28,11 +28,9 @@ stats-client:
     backoff-period: 3000
     max-attempts: 3
 
-eureka:                                     # ← добавлен блок (если его не было)
+eureka:
   client:
     service-url:
       defaultZone: http://discovery-server:8761/eureka/
   instance:
     prefer-ip-address: true
-
-# TODO: Этот сервис будет удалён после миграции на новую рекомендательную систему
