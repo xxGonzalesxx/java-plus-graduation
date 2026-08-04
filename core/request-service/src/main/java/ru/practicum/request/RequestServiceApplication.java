@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableFeignClients
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"ru.practicum.request", "ru.practicum.exception", "ru.practicum.client"})
+@ComponentScan(basePackages = {"ru.practicum.request", "ru.practicum.exception", "client"})
 public class RequestServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(RequestServiceApplication.class, args);
