@@ -14,7 +14,7 @@ import java.time.Instant;
 @Service
 public class CollectorClient {
 
-    private static final String SERVICE_ID = "collector-service";
+    private static final String SERVICE_ID = "collector";
 
     private final GrpcChannelProvider channelProvider;
 

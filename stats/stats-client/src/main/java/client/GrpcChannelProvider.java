@@ -23,20 +23,10 @@ public class GrpcChannelProvider {
         this.discoveryClient = discoveryClient;
     }
 
-    /**
-     * Возвращает закэшированный канал к сервису, создавая его при первом обращении.
-     *
-     * @param serviceId идентификатор сервиса, под которым он зарегистрирован в Eureka
-     *                  (обычно совпадает со spring.application.name, регистр не важен)
-     */
     public ManagedChannel getChannel(String serviceId) {
         return channels.computeIfAbsent(serviceId, this::createChannel);
     }
 
-    /**
-     * Сбрасывает закэшированный канал (например, если сервис перезапустился
-     * и получил новый случайный gRPC-порт).
-     */
     public void invalidate(String serviceId) {
         ManagedChannel channel = channels.remove(serviceId);
         if (channel != null) {
