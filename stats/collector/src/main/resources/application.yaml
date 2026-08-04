@@ -3,18 +3,20 @@ server:
 
 spring:
   application:
-    name: collector
+    name: collector-service
   config:
     import: "optional:configserver:"
+  cloud:
+    config:
+      enabled: false
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       acks: all
       retries: 3
-
-grpc:
-  server:
-    port: 0
+  grpc:
+    server:
+      port: 9095
 
 app:
   kafka:
@@ -28,8 +30,8 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadataMap:
-      grpcPort: ${local.grpc.port:${grpc.server.port:0}}
+    metadata-map:
+      grpcPort: "9095"
 
 logging:
   level:

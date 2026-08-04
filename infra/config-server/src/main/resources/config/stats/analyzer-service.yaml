@@ -28,7 +28,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
   grpc:
     server:
-      port: 0
+      port: 9091
 
 app:
   kafka:
@@ -44,7 +44,7 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
     metadata-map:
-      grpcPort: "0"
+      grpcPort: "9091"
 
 logging:
   level:

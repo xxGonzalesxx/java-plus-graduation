@@ -6,6 +6,9 @@ spring:
     name: analyzer-service
   config:
     import: "optional:configserver:"
+  cloud:
+    config:
+      enabled: false
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5438/analyzer
@@ -26,10 +29,9 @@ spring:
       group-id: analyzer-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-      # value-deserializer будет добавлен позже (кастомный Avro)
   grpc:
     server:
-      port: 0
+      port: 9096
 
 app:
   kafka:
@@ -45,7 +47,7 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
     metadata-map:
-      grpcPort: "0"
+      grpcPort: "9096"
 
 logging:
   level:

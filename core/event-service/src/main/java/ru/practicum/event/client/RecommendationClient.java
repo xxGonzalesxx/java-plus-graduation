@@ -10,7 +10,7 @@ import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import java.util.List;
 
 @Slf4j
-@Component
+@Component("eventRecommendationClient")
 @RequiredArgsConstructor
 public class RecommendationClient {
 
