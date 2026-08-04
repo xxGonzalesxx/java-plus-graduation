@@ -20,7 +20,7 @@ public class KafkaProducerService {
     public void send(UserActionAvro message) {
         String key = String.valueOf(message.getUserId());
         kafkaTemplate.send(userActionsTopic, key, message);
-        log.debug("Sent message to topic {}: userId={}, eventId={}",
+        log.info("Sent message to topic {}: userId={}, eventId={}",
                 userActionsTopic, message.getUserId(), message.getEventId());
     }
 }

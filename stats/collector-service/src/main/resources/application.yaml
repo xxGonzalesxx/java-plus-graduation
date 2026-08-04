@@ -4,15 +4,17 @@ server:
 spring:
   application:
     name: collector-service
+  config:
+    import: "optional:configserver:"
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       acks: all
       retries: 3
 
-  grpc:
-    server:
-      port: 0
+grpc:
+  server:
+    port: 0
 
 app:
   kafka:

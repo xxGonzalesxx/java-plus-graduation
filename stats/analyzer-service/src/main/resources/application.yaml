@@ -32,9 +32,9 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
       # value-deserializer будет добавлен позже (кастомный Avro)
 
-  grpc:
-    server:
-      port: 0
+grpc:
+  server:
+    port: 0
 
 app:
   kafka:
