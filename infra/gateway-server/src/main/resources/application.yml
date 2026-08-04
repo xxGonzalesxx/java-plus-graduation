@@ -27,7 +27,7 @@ eureka:
 management:
   endpoint:
     gateway:
-      access: unrestricted   # или read-only
+      access: unrestricted
   endpoints:
     web:
       exposure:
