@@ -27,6 +27,9 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+    metadataMap:
+      grpcPort: ${local.grpc.port:${grpc.server.port:0}}
 
 logging:
   level:

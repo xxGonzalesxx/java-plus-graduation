@@ -30,7 +30,6 @@ spring:
       group-id: analyzer-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-      # value-deserializer будет добавлен позже (кастомный Avro)
 
 grpc:
   server:
@@ -48,6 +47,9 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+    metadataMap:
+      grpcPort: ${local.grpc.port:${grpc.server.port:0}}
 
 logging:
   level:
