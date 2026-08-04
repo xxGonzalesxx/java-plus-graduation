@@ -6,7 +6,7 @@ spring:
     name: analyzer-service
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://analyzer-db:5432/analyzer   # ← исправлено
+    url: jdbc:postgresql://analyzer-db:5432/analyzer
     username: analyzer
     password: analyzer
   jpa:
@@ -26,10 +26,9 @@ spring:
       group-id: analyzer-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-
-grpc:
-  server:
-    port: 0
+  grpc:
+    server:
+      port: 0
 
 app:
   kafka:
@@ -44,8 +43,8 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadataMap:
-        grpcPort: ${local.grpc.port:${grpc.server.port:0}}
+    metadata-map:
+      grpcPort: "0"
 
 logging:
   level:

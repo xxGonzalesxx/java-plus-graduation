@@ -10,10 +10,9 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
       retries: 3
-
-grpc:
-  server:
-    port: 0
+  grpc:
+    server:
+      port: 0
 
 app:
   kafka:
@@ -27,8 +26,8 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadataMap:
-      grpcPort: ${local.grpc.port:${grpc.server.port:0}}
+    metadata-map:
+      grpcPort: "0"
 
 logging:
   level:

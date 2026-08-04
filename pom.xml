@@ -133,6 +133,14 @@
 				<version>${project.version}</version>
 			</dependency>
 
+
+			<!-- grpc-netty-shaded (не входит в BOM) -->
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-netty-shaded</artifactId>
+				<version>${grpc.version}</version>
+			</dependency>
+
 		</dependencies>
 
 	</dependencyManagement>
