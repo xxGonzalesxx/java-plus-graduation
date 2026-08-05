@@ -12,7 +12,10 @@ import ru.practicum.event.dto.PublicEventParamDto;
 import ru.practicum.event.service.EventService;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
 
 @Slf4j
 @RestController
@@ -35,27 +38,19 @@ public class PublicEventController {
                                            HttpServletRequest request) {
         log.info("GET /event/{id}: id={}", id);
 
-        // 1. Получаем событие
         EventFullDto event = eventService.getEventByIdPublic(id, request);
 
-        // 2. Получаем userId из заголовка (если есть)
         Long userId = getUserIdFromRequest(request);
-
-        // 3. Если пользователь авторизован — отправляем просмотр в Collector
         if (userId != null) {
             recommendationClient.sendView(userId, id);
         }
 
-        // 4. Получаем рейтинг из Analyzer и устанавливаем в DTO
         Double rating = recommendationClient.getEventRating(id);
         event.setRating(rating);
 
         return event;
     }
 
-    /**
-     * GET /events/recommendations — рекомендации для пользователя
-     */
     @GetMapping("/recommendations")
     public List<EventShortDto> getRecommendations(
             @RequestHeader("X-EWM-USER-ID") Long userId,
@@ -63,21 +58,35 @@ public class PublicEventController {
 
         log.info("Getting recommendations for user: {}", userId);
 
-        // 1. Получаем рекомендации из Analyzer
         List<RecommendedEventProto> recommendations = recommendationClient
                 .getRecommendations(userId, limit);
 
-        // 2. Получаем события из БД по ID
+        if (recommendations.isEmpty()) {
+            return List.of();
+        }
+
         List<Long> eventIds = recommendations.stream()
                 .map(RecommendedEventProto::getEventId)
                 .toList();
 
-        return eventService.getEventsByIds(eventIds);
+        // НОВОЕ: сохраняем порядок и score, пришедшие от Analyzer
+        Map<Long, Integer> orderIndex = IntStream.range(0, eventIds.size())
+                .boxed()
+                .collect(java.util.stream.Collectors.toMap(eventIds::get, i -> i));
+
+        Map<Long, Double> scoreByEventId = new java.util.HashMap<>();
+        for (RecommendedEventProto r : recommendations) {
+            scoreByEventId.put(r.getEventId(), (double) r.getScore());
+        }
+
+        List<EventShortDto> events = eventService.getEventsByIds(eventIds);
+
+        events.forEach(e -> e.setRating(scoreByEventId.getOrDefault(e.getId(), 0.0)));
+        events.sort(Comparator.comparingInt(e -> orderIndex.getOrDefault(e.getId(), Integer.MAX_VALUE)));
+
+        return events;
     }
 
-    /**
-     * PUT /events/{eventId}/like — лайк мероприятия
-     */
     @PutMapping("/{eventId}/like")
     public void likeEvent(
             @PathVariable Long eventId,
@@ -85,10 +94,7 @@ public class PublicEventController {
 
         log.info("User {} liked event {}", userId, eventId);
 
-        // 1. Проверяем, что пользователь участвовал в мероприятии
         eventService.validateUserParticipation(userId, eventId);
-
-        // 2. Отправляем лайк в Collector
         recommendationClient.sendLike(userId, eventId);
     }
 

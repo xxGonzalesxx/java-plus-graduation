@@ -38,9 +38,10 @@ public class ParticipationRequestController {
             throw new ValidationException("eventId is required");
         }
 
+        // ИЗМЕНЕНО: сначала создаём заявку, только потом шлём в Collector
+        ParticipationRequestDto result = requestService.addRequest(userId, eventId);
         recommendationClient.sendRegister(userId, eventId);
-
-        return requestService.addRequest(userId, eventId);
+        return result;
     }
 
     @GetMapping("/{userId}/requests")
@@ -49,15 +50,16 @@ public class ParticipationRequestController {
         return requestService.getRequestByUserId(userId);
     }
 
+    // ИЗМЕНЕНО: тот же порядок — сначала addRequest, потом sendRegister
     @PostMapping("/{userId}/events/{eventId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addRequestDirect(@PathVariable Long userId,
                                                     @PathVariable Long eventId) {
         log.info("POST /users/{}/events/{}/requests", userId, eventId);
 
+        ParticipationRequestDto result = requestService.addRequest(userId, eventId);
         recommendationClient.sendRegister(userId, eventId);
-
-        return requestService.addRequest(userId, eventId);
+        return result;
     }
 
     @PatchMapping("/{userId}/requests/{requestId}/cancel")

@@ -34,16 +34,32 @@ public class KafkaConsumerService {
                 message.getUserId(), message.getEventId(), message.getActionType());
 
         try {
-            UserAction userAction = UserAction.builder()
-                    .userId(message.getUserId())
-                    .eventId(message.getEventId())
-                    .actionType(message.getActionType().toString())
-                    .weight(getWeight(message.getActionType()))
-                    .timestamp(message.getTimestamp())
-                    .build();
+            double newWeight = getWeight(message.getActionType());
 
-            userActionRepository.save(userAction);
-            log.info("User action saved to database");
+            UserAction existing = userActionRepository
+                    .findByUserIdAndEventId(message.getUserId(), message.getEventId())
+                    .orElse(null);
+
+            if (existing == null) {
+                UserAction userAction = UserAction.builder()
+                        .userId(message.getUserId())
+                        .eventId(message.getEventId())
+                        .actionType(message.getActionType().toString())
+                        .weight(newWeight)
+                        .timestamp(message.getTimestamp())
+                        .build();
+                userActionRepository.save(userAction);
+                log.info("User action created");
+            } else if (newWeight > existing.getWeight()) {
+                // обновляем только если новый вес больше — храним максимальный
+                existing.setActionType(message.getActionType().toString());
+                existing.setWeight(newWeight);
+                existing.setTimestamp(message.getTimestamp());
+                userActionRepository.save(existing);
+                log.info("User action updated to higher weight: {}", newWeight);
+            } else {
+                log.debug("Existing weight {} is already >= new weight {}, skipping", existing.getWeight(), newWeight);
+            }
 
         } catch (Exception e) {
             log.error("Error saving user action: {}", e.getMessage(), e);
