@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.ewm.stats.proto.ActionTypeProto;
 import ru.practicum.ewm.stats.proto.UserActionControllerGrpc;
 import ru.practicum.ewm.stats.proto.UserActionProto;
-
 import java.time.Instant;
-
 
 @Slf4j
 @Service
