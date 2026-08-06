@@ -20,6 +20,7 @@
         <module>collector</module>
         <module>aggregator</module>
         <module>analyzer</module>
+        <module>stats-server</module>
     </modules>
 
 </project>
