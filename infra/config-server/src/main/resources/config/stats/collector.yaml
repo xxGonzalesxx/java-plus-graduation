@@ -12,7 +12,7 @@ spring:
       retries: 3
   grpc:
     server:
-      port: 0
+      port: 40612
       security:
         enabled: false
 
@@ -29,7 +29,7 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
     metadata-map:
-      grpcPort: ${spring.grpc.server.port:0}
+      grpcPort: ${spring.grpc.server.port:40612}
 
 logging:
   level:

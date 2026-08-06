@@ -1,23 +1,30 @@
+server:
+  port: 8088
+
 spring:
   application:
     name: collector
   config:
     import: "optional:configserver:"
-  grpc:
-    server:
-      port: 0
-      security:
-        enabled: false
+  cloud:
+    config:
+      enabled: false
   kafka:
     bootstrap-servers: localhost:9092
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: ru.practicum.collector.serializer.CollectorAvroSerializer
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
       retries: 3
-
-server:
-  port: 8088
+  grpc:
+    server:
+      port: 40612
+      security:
+        enabled: true
+        certificate-chain: classpath:grpc-keystore.p12
+        private-key: classpath:grpc-keystore.p12
+        key-store-type: PKCS12
+        key-store-password: changeit
+        key-alias: grpc-server
 
 app:
   kafka:
@@ -28,16 +35,14 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    initial-instance-info-replication-interval-seconds: 5
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    lease-renewal-interval-in-seconds: 5
-    lease-expiration-duration-in-seconds: 10
     metadata-map:
-      grpcPort: ${spring.grpc.server.port:0}
+      grpcPort: ${spring.grpc.server.port:40612}
 
 logging:
   level:
     ru.practicum: DEBUG
-    org.springframework.kafka: INFO
+    org.springframework.kafka: DEBUG
+    org.apache.kafka: DEBUG

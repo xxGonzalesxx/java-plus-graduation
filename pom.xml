@@ -40,8 +40,8 @@
 		<avro.version>1.12.1</avro.version>
 
 		<!-- Proto Version -->
-		<grpc.version>1.82.1</grpc.version>
-		<protobuf.version>3.25.8</protobuf.version>
+		<grpc.version>1.63.0</grpc.version>
+		<protobuf.version>3.23.4</protobuf.version>
 		<protobuf-maven-plugin.version>0.6.1</protobuf-maven-plugin.version>
 		<os-maven-plugin.version>1.7.1</os-maven-plugin.version>
 
