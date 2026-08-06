@@ -51,7 +51,17 @@ public class ErrorHandler {
                                 violation.getInvalidValue()
                         )
                 )
-                .toList().getFirst();
+                .findFirst()
+                .orElse(null);
+
+        if (item == null) {
+            log.warn("400: ConstraintViolationException with no violations present");
+            return new ErrorResponse(HttpStatus.BAD_REQUEST,
+                    "Incorrectly made request.",
+                    "Constraint violation, but no details available.",
+                    LocalDateTime.now());
+        }
+
         log.warn("400: {}", item);
         return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
