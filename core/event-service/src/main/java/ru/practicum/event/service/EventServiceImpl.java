@@ -10,11 +10,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.HitDto;
+import ru.practicum.ParamDto;
+import ru.practicum.StatsDto;
 import ru.practicum.dto.CategoryDto;
 import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.dto.UserShortDto;
 import ru.practicum.event.client.CategoryClient;
-import ru.practicum.event.client.RecommendationClient;
 import ru.practicum.event.client.RequestClient;
 import ru.practicum.event.client.UserClient;
 import ru.practicum.event.dto.*;
@@ -32,8 +33,10 @@ import ru.practicum.model.EventState;
 import ru.practicum.model.ParticipationStatus;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,11 +51,11 @@ public class EventServiceImpl implements EventService {
     private final CategoryClient categoryClient;
     private final UserClient userClient;
     private final RequestClient requestClient;
-    private final RecommendationClient recommendationClient; // НОВОЕ
 
     @Override
     public List<EventShortDto> getEventsPrivate(Long userId, Integer from, Integer size) {
         log.info("Getting events for user id={}, from={}, size={}", userId, from, size);
+
         checkUserExists(userId);
 
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("id"));
@@ -61,7 +64,8 @@ public class EventServiceImpl implements EventService {
         if (events.isEmpty()) {
             return List.of();
         }
-        return buildShortDtoList(events);
+
+        return buildShortDtoList(events, false);
     }
 
     @Override
@@ -99,9 +103,12 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException("Event does not belong to user");
         }
 
+        LocalDateTime start = event.getPublishedOn() != null ? event.getPublishedOn() : event.getCreatedOn();
+        ParamDto paramDto = new ParamDto(start, LocalDateTime.now(), List.of(url), false);
+
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(getConfirmedRequestsCount(eventId));
-        fullDto.setRating(recommendationClient.getEventRating(eventId)); // было: getViews(paramDto)
+        fullDto.setRating((double) getViews(paramDto));
         setCategoryAndInitiator(fullDto, event);
 
         return fullDto;
@@ -136,7 +143,10 @@ public class EventServiceImpl implements EventService {
         }
 
         if (dto.location() != null) {
-            event.setLocation(new Location(dto.location().lat(), dto.location().lon()));
+            event.setLocation(new Location(
+                    dto.location().lat(),
+                    dto.location().lon()
+            ));
         }
 
         if (dto.stateAction() != null) {
@@ -161,7 +171,7 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("End date cannot be before start date");
         }
 
-        // УБРАНО: saveHit(request); — по ТЗ для GET /events хит больше не нужен
+        saveHit(request);
 
         QEvent event = QEvent.event;
         BooleanBuilder paramFilter = new BooleanBuilder();
@@ -212,21 +222,21 @@ public class EventServiceImpl implements EventService {
                     .toList();
         }
 
-        Map<Long, Double> ratingMap = getRatingMap(filteredEvents); // было: getViewsMap
+        Map<Long, Long> viewsMap = getViewsMap(filteredEvents, true);
 
-        List<EventShortDto> shortsDto = buildShortDtoListWithMaps(filteredEvents, confirmedRequestsMap, ratingMap);
+        List<EventShortDto> shortsDto = buildShortDtoListWithMaps(filteredEvents, confirmedRequestsMap, viewsMap);
 
         if (eventParamDto.sort() != null && eventParamDto.sort().equalsIgnoreCase("VIEWS")) {
-            shortsDto.sort(java.util.Comparator.comparing(EventShortDto::getRating).reversed());
+            shortsDto.sort(Comparator.comparing(EventShortDto::getRating).reversed());
         }
 
         log.info("Получен список запросов по указанным фильтрам");
+
         return shortsDto;
     }
 
     @Override
     public EventFullDto getEventByIdPublic(Long id, jakarta.servlet.http.HttpServletRequest request) {
-        // saveHit оставлен: по ТЗ отдельный GET /events/{id} обязан фиксировать просмотр
         saveHit(request);
 
         Event event = getEventOrThrow(id);
@@ -235,12 +245,18 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Event must be published");
         }
 
+        ParamDto paramDto = new ParamDto(event.getPublishedOn(),
+                LocalDateTime.now(),
+                List.of(request.getRequestURI()),
+                true);
+
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(getConfirmedRequestsCount(id));
-        fullDto.setRating(recommendationClient.getEventRating(id)); // было: getViews(paramDto)
+        fullDto.setRating((double) getViews(paramDto));
         setCategoryAndInitiator(fullDto, event);
 
         log.info("Получено событие с id = {}", id);
+
         return fullDto;
     }
 
@@ -259,15 +275,19 @@ public class EventServiceImpl implements EventService {
         if (filter.users() != null && !filter.users().isEmpty()) {
             predicate.and(event.initiatorId.in(filter.users()));
         }
+
         if (filter.states() != null && !filter.states().isEmpty()) {
             predicate.and(event.state.in(filter.states()));
         }
+
         if (filter.categories() != null && !filter.categories().isEmpty()) {
             predicate.and(event.categoryId.in(filter.categories()));
         }
+
         if (filter.rangeStart() != null) {
             predicate.and(event.eventDate.goe(filter.rangeStart()));
         }
+
         if (filter.rangeEnd() != null) {
             predicate.and(event.eventDate.loe(filter.rangeEnd()));
         }
@@ -280,7 +300,7 @@ public class EventServiceImpl implements EventService {
         }
 
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(events);
-        Map<Long, Double> ratingMap = getRatingMap(events); // было: getViewsMap
+        Map<Long, Long> viewsMap = getViewsMap(events, false);
         Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
         Map<Long, UserShortDto> userMap = getUserMap(events);
 
@@ -288,7 +308,7 @@ public class EventServiceImpl implements EventService {
                 .map(e -> {
                     EventFullDto fullDto = eventMapper.toFullDto(e);
                     fullDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
-                    fullDto.setRating(ratingMap.getOrDefault(e.getId(), 0.0));
+                    fullDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
                     fullDto.setCategory(categoryMap.get(e.getCategoryId()));
                     fullDto.setInitiator(userMap.get(e.getInitiatorId()));
                     return fullDto;
@@ -307,16 +327,33 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("Дата события должна быть не раньше, чем через час");
         }
 
-        if (dto.annotation() != null) event.setAnnotation(dto.annotation());
-        if (dto.description() != null) event.setDescription(dto.description());
-        if (dto.eventDate() != null) event.setEventDate(dto.eventDate());
-        if (dto.paid() != null) event.setPaid(dto.paid());
-        if (dto.participantLimit() != null) event.setParticipantLimit(dto.participantLimit());
-        if (dto.requestModeration() != null) event.setRequestModeration(dto.requestModeration());
-        if (dto.title() != null) event.setTitle(dto.title());
+        if (dto.annotation() != null) {
+            event.setAnnotation(dto.annotation());
+        }
+        if (dto.description() != null) {
+            event.setDescription(dto.description());
+        }
+        if (dto.eventDate() != null) {
+            event.setEventDate(dto.eventDate());
+        }
+        if (dto.paid() != null) {
+            event.setPaid(dto.paid());
+        }
+        if (dto.participantLimit() != null) {
+            event.setParticipantLimit(dto.participantLimit());
+        }
+        if (dto.requestModeration() != null) {
+            event.setRequestModeration(dto.requestModeration());
+        }
+        if (dto.title() != null) {
+            event.setTitle(dto.title());
+        }
 
         if (dto.location() != null) {
-            event.setLocation(new Location(dto.location().lat(), dto.location().lon()));
+            event.setLocation(new Location(
+                    dto.location().lat(),
+                    dto.location().lon()
+            ));
         }
 
         if (dto.category() != null) {
@@ -367,15 +404,18 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        Long confirmedRequests = getConfirmedRequestsCount(eventId);
-        double rating = recommendationClient.getEventRating(eventId); // было: viewsMap
+        Map<Long, Long> confirmedRequestsCount = getConfirmedRequestsMap(List.of(event));
+        Map<Long, Long> viewsMap = getViewsMap(List.of(event), false);
+        Long views = viewsMap.getOrDefault(event.getId(), 0L);
+        Long confirmedRequests = confirmedRequestsCount.getOrDefault(event.getId(), 0L);
 
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(confirmedRequests);
-        fullDto.setRating(rating);
+        fullDto.setRating((double) views);
         setCategoryAndInitiator(fullDto, event);
 
         log.info("Internal: event {} returned with status {}", eventId, event.getState());
+
         return fullDto;
     }
 
@@ -416,13 +456,41 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    // НОВОЕ: замена getViewsMap — рейтинг из Analyzer батчем
-    private Map<Long, Double> getRatingMap(List<Event> events) {
+    private Long getViews(ParamDto paramDto) {
+        List<StatsDto> views = statClient.get(paramDto);
+        return views.isEmpty() ? 0L : views.getFirst().hits();
+    }
+
+    public Map<Long, Long> getViewsMap(List<Event> events, boolean unique) {
         try {
-            List<Long> eventIds = events.stream().map(Event::getId).toList();
-            return recommendationClient.getEventsRating(eventIds);
+            String url = "/events/";
+            List<String> uris = events.stream()
+                    .map(event -> url + event.getId())
+                    .toList();
+            LocalDateTime start = events.stream()
+                    .map(Event::getPublishedOn)
+                    .filter(Objects::nonNull)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(LocalDateTime.now());
+
+            List<StatsDto> stats = statClient.get(new ParamDto(start, LocalDateTime.now(), uris, unique));
+
+            return stats.stream()
+                    .filter(statsDto -> {
+                        String lastPart = statsDto.uri().substring(statsDto.uri().lastIndexOf("/") + 1);
+                        try {
+                            Long.parseLong(lastPart);
+                            return true;
+                        } catch (NumberFormatException e) {
+                            return false;
+                        }
+                    })
+                    .collect(Collectors.toMap(
+                            statsDto -> Long.parseLong(statsDto.uri().substring(statsDto.uri().lastIndexOf("/") + 1)),
+                            StatsDto::hits
+                    ));
         } catch (Exception e) {
-            log.warn("Не удалось получить рейтинг событий: {}", e.getMessage());
+            log.warn("Не удалось получить статистику просмотров: {}", e.getMessage());
             return Map.of();
         }
     }
@@ -474,15 +542,15 @@ public class EventServiceImpl implements EventService {
         return fullDto;
     }
 
-    private List<EventShortDto> buildShortDtoList(List<Event> events) {
+    private List<EventShortDto> buildShortDtoList(List<Event> events, boolean uniqueViews) {
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(events);
-        Map<Long, Double> ratingMap = getRatingMap(events);
-        return buildShortDtoListWithMaps(events, confirmedRequestsMap, ratingMap);
+        Map<Long, Long> viewsMap = getViewsMap(events, uniqueViews);
+        return buildShortDtoListWithMaps(events, confirmedRequestsMap, viewsMap);
     }
 
     private List<EventShortDto> buildShortDtoListWithMaps(List<Event> events,
                                                           Map<Long, Long> confirmedRequestsMap,
-                                                          Map<Long, Double> ratingMap) {
+                                                          Map<Long, Long> viewsMap) {
         Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
         Map<Long, UserShortDto> userMap = getUserMap(events);
 
@@ -490,7 +558,7 @@ public class EventServiceImpl implements EventService {
                 .map(e -> {
                     EventShortDto shortDto = eventMapper.toShortDto(e);
                     shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
-                    shortDto.setRating(ratingMap.getOrDefault(e.getId(), 0.0));
+                    shortDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
                     shortDto.setCategory(categoryMap.get(e.getCategoryId()));
                     shortDto.setInitiator(userMap.get(e.getInitiatorId()));
                     return shortDto;
@@ -536,7 +604,9 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventRequestStatusUpdateResult patchRequestsStatusOfEvent(
-            Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
+            Long userId,
+            Long eventId,
+            EventRequestStatusUpdateRequest request) {
 
         log.info("Updating requests status for event id={} by user id={}", eventId, userId);
 
@@ -566,6 +636,8 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    // ========== НОВЫЕ МЕТОДЫ ДЛЯ РЕКОМЕНДАЦИЙ ==========
+
     @Override
     public List<EventShortDto> getEventsByIds(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
@@ -575,7 +647,7 @@ public class EventServiceImpl implements EventService {
         List<Event> events = eventRepository.findAllById(eventIds);
 
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(events);
-        Map<Long, Double> ratingMap = getRatingMap(events);
+        Map<Long, Long> viewsMap = getViewsMap(events, false);
         Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
         Map<Long, UserShortDto> userMap = getUserMap(events);
 
@@ -583,7 +655,7 @@ public class EventServiceImpl implements EventService {
                 .map(e -> {
                     EventShortDto shortDto = eventMapper.toShortDto(e);
                     shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
-                    shortDto.setRating(ratingMap.getOrDefault(e.getId(), 0.0));
+                    shortDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
                     shortDto.setCategory(categoryMap.get(e.getCategoryId()));
                     shortDto.setInitiator(userMap.get(e.getInitiatorId()));
                     return shortDto;
@@ -602,19 +674,9 @@ public class EventServiceImpl implements EventService {
             if (!participated) {
                 throw new ValidationException("User must participate in event to like it");
             }
-        } catch (ValidationException e) {
-            throw e;
         } catch (Exception e) {
             log.warn("Failed to check user participation: {}", e.getMessage());
             throw new ValidationException("User must participate in event to like it");
         }
-    }
-
-    @Override
-    public Map<Long, Long> getViewsMap(List<Event> events, boolean unique) {
-        // Метод устарел, используем getRatingMap()
-        // Оставлен для совместимости с интерфейсом
-        log.warn("getViewsMap is deprecated, use getRatingMap instead");
-        return Map.of();
     }
 }
