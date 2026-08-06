@@ -13,6 +13,8 @@ spring:
   grpc:
     server:
       port: 0
+      security:
+        enabled: false
 
 app:
   kafka:
@@ -27,7 +29,7 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
     metadata-map:
-      grpcPort: "0"
+      grpcPort: ${spring.grpc.server.port:0}
 
 logging:
   level:

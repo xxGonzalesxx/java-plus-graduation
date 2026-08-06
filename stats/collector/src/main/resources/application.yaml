@@ -3,24 +3,39 @@ spring:
     name: collector
   config:
     import: "optional:configserver:"
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: config-server
+  grpc:
+    server:
+      port: 0
+      security:
+        enabled: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: ru.practicum.collector.serializer.CollectorAvroSerializer
+      acks: all
+      retries: 3
+
+server:
+  port: 8088
+
+app:
+  kafka:
+    topics:
+      user-actions: stats.user-actions.v1
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    initial-instance-info-replication-interval-seconds: 5  # ← добавить!
+    initial-instance-info-replication-interval-seconds: 5
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    lease-renewal-interval-in-seconds: 5                    # ← добавить!
-    lease-expiration-duration-in-seconds: 10                # ← добавить!
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
     metadata-map:
-      grpcPort: "0"
+      grpcPort: ${spring.grpc.server.port:0}
 
 logging:
   level:
