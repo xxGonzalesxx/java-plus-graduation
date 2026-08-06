@@ -19,7 +19,7 @@ spring:
     server:
       port: 40612
       security:
-        enabled: true
+        enabled: false
         certificate-chain: classpath:grpc-keystore.p12
         private-key: classpath:grpc-keystore.p12
         key-store-type: PKCS12

@@ -12,14 +12,13 @@ import ru.practicum.ewm.stats.avro.UserActionAvro;
 @RequiredArgsConstructor
 public class KafkaProducerService {
 
-    private final KafkaTemplate<String, UserActionAvro> kafkaTemplate;
+    private final KafkaTemplate<Long, UserActionAvro> kafkaTemplate;
 
     @Value("${app.kafka.topics.user-actions:stats.user-actions.v1}")
     private String userActionsTopic;
 
     public void send(UserActionAvro message) {
-        String key = String.valueOf(message.getUserId());
-        kafkaTemplate.send(userActionsTopic, key, message);
+        kafkaTemplate.send(userActionsTopic, message.getUserId(), message);  // ключ — Long
         log.info("Sent message to topic {}: userId={}, eventId={}",
                 userActionsTopic, message.getUserId(), message.getEventId());
     }
