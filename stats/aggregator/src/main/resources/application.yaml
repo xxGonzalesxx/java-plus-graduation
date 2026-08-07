@@ -4,35 +4,19 @@ server:
 spring:
   application:
     name: aggregator-service
-  config:
-    import: "optional:configserver:"
   cloud:
-      config:
-        enabled: false  # ← ДОБАВЬ!
+    config:
+      enabled: false
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: aggregator-service
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.LongSerializer
-      acks: all
-
-grpc:
-  server:
-    port: 0
-
-app:
-  kafka:
-    topics:
-      user-actions: stats.user-actions.v1
-      events-similarity: stats.events-similarity.v1
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
