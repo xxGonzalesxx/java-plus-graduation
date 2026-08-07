@@ -25,9 +25,6 @@ public class AnalyzerClient {
         this.channelProvider = channelProvider;
     }
 
-    /**
-     * Получить список рекомендованных мероприятий для пользователя
-     */
     public List<RecommendedEventProto> getRecommendationsForUser(long userId, int maxResults) {
         try {
             UserPredictionsRequestProto request = UserPredictionsRequestProto.newBuilder()
@@ -41,9 +38,6 @@ public class AnalyzerClient {
         }
     }
 
-    /**
-     * Получить список мероприятий, похожих на указанное, с которыми пользователь ещё не взаимодействовал
-     */
     public List<RecommendedEventProto> getSimilarEvents(long eventId, long userId, int maxResults) {
         try {
             SimilarEventsRequestProto request = SimilarEventsRequestProto.newBuilder()
@@ -58,10 +52,6 @@ public class AnalyzerClient {
         }
     }
 
-    /**
-     * Получить сумму максимальных весов действий пользователей для каждого мероприятия
-     * (используется для получения rating мероприятия)
-     */
     public List<RecommendedEventProto> getInteractionsCount(List<Long> eventIds) {
         try {
             InteractionsCountRequestProto request = InteractionsCountRequestProto.newBuilder()
@@ -74,17 +64,11 @@ public class AnalyzerClient {
         }
     }
 
-    /**
-     * Получить рейтинг одного мероприятия
-     */
     public double getEventRating(long eventId) {
         List<RecommendedEventProto> result = getInteractionsCount(List.of(eventId));
         return result.isEmpty() ? 0.0 : result.get(0).getScore();
     }
 
-    /**
-     * Получить рейтинг нескольких мероприятий
-     */
     public java.util.Map<Long, Double> getEventsRating(List<Long> eventIds) {
         List<RecommendedEventProto> result = getInteractionsCount(eventIds);
         return result.stream()

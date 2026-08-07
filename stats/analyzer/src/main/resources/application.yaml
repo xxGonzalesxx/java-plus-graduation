@@ -48,6 +48,9 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
+    metadata-map: # ← добавьте
+      gRPC.port: ${grpc.server.port:0}        # ← пробрасываем порт
+      grpcPort: ${grpc.server.port:0}         # ← дублируем для совместимости
 
 logging:
   level:
