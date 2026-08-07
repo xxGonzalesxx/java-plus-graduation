@@ -403,7 +403,7 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://event-db:5432/event"
       SPRING_DATASOURCE_USERNAME: "user"
       SPRING_DATASOURCE_PASSWORD: "password"
-      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector-service"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector"
       GRPC_CLIENT_ANALYZER_ADDRESS: "discovery:///analyzer-service"
     networks:
       - explore-with-me
@@ -432,7 +432,7 @@ services:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://request-db:5432/request"
       SPRING_DATASOURCE_USERNAME: "user"
       SPRING_DATASOURCE_PASSWORD: "password"
-      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector-service"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector"
     networks:
       - explore-with-me
 

@@ -19,7 +19,7 @@ spring:
     show-sql: true
   sql:
     init:
-      mode: always
+      mode: never
   kafka:
     bootstrap-servers: kafka:29092
     consumer:
@@ -45,9 +45,6 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map: # ← ДОБАВЛЕНО
-      gRPC.port: ${grpc.server.port:0}
-      grpcPort: ${grpc.server.port:0}
 
 logging:
   level:
