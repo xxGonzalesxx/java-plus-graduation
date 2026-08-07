@@ -22,7 +22,10 @@ public class GrpcPortMetadataPublisher {
         int port = event.getPort();
         if (registration instanceof EurekaRegistration eurekaRegistration) {
             eurekaRegistration.getApplicationInfoManager()
-                    .registerAppMetadata(Map.of("gRPC.port", String.valueOf(port)));
+                    .registerAppMetadata(Map.of(
+                            "gRPC.port", String.valueOf(port),
+                            "grpcPort", String.valueOf(port)
+                    ));
         }
     }
 }
