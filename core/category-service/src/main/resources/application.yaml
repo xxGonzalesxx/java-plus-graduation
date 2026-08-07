@@ -1,9 +1,10 @@
 spring:
   application:
     name: category-service
+  config:
+    import: "optional:configserver:"  # ← ПРАВИЛЬНО!
   cloud:
     config:
-      import: "optional:configserver:"
       discovery:
         enabled: false
       fail-fast: false
