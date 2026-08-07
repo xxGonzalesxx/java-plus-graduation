@@ -1,15 +1,29 @@
 spring:
   application:
     name: comment-service
-  config:
-    import: "optional:configserver:"
   cloud:
     config:
       discovery:
-        enabled: true
-        service-id: config-server
+        enabled: false
+      fail-fast: false
   main:
     allow-bean-definition-overriding: true
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/comments
+    username: user
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
 
 server:
   port: 0
