@@ -7,7 +7,7 @@ spring:
   config:
     import: "optional:configserver:"
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: aggregator-service
       auto-offset-reset: earliest
@@ -16,9 +16,9 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
 
-grpc:                        # ← добавьте
+grpc:
   server:
-    port: 0                  # ← случайный порт
+    port: 0
 
 app:
   kafka:

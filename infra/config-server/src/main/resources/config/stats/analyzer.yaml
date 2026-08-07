@@ -45,7 +45,7 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map: # ← ДОБАВЬ
+    metadata-map:
       gRPC.port: ${grpc.server.port:0}
       grpcPort: ${grpc.server.port:0}
 
