@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: collector
+    name: collector-service
   config:
     import: "optional:configserver:"
   cloud:
@@ -15,16 +15,12 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
       retries: 3
-  grpc:
-    server:
-      port: 40612
-      security:
-        enabled: false
-        certificate-chain: classpath:grpc-keystore.p12
-        private-key: classpath:grpc-keystore.p12
-        key-store-type: PKCS12
-        key-store-password: changeit
-        key-alias: grpc-server
+
+grpc:
+  server:
+    port: 0
+    security:
+      enabled: false
 
 app:
   kafka:
@@ -36,10 +32,10 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
   instance:
+    lease-renewal-interval-in-seconds: 5      # ← добавить
+    lease-expiration-duration-in-seconds: 15  # ← добавить
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map:
-      grpcPort: ${spring.grpc.server.port:40612}
 
 logging:
   level:

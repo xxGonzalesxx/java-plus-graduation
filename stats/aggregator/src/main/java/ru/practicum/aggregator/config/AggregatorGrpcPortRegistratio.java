@@ -1,4 +1,4 @@
-package ru.practicum.collector.config;
+package ru.practicum.aggregator.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import lombok.RequiredArgsConstructor;
@@ -13,14 +13,14 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GrpcPortRegistration {
+public class AggregatorGrpcPortRegistratio {
 
     private final ApplicationInfoManager applicationInfoManager;
 
     @EventListener
     public void onGrpcServerStarted(GrpcServerStartedEvent event) {
         int grpcPort = event.getPort();
-        log.info("Updating Eureka metadata with gRPC port: {}", grpcPort);
+        log.info("Aggregator: Updating Eureka metadata with gRPC port: {}", grpcPort);
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("gRPC.port", String.valueOf(grpcPort));

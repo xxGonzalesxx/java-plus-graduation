@@ -14,6 +14,10 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
 
+grpc:                        # ← добавьте
+  server:
+    port: 0                  # ← случайный порт
+
 app:
   kafka:
     topics:

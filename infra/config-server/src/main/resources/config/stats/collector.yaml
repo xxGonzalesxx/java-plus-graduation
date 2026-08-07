@@ -3,18 +3,19 @@ server:
 
 spring:
   application:
-    name: collector
+    name: collector-service
   kafka:
     bootstrap-servers: kafka:29092
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
       retries: 3
-  grpc:
-    server:
-      port: 40612
-      security:
-        enabled: false
+
+grpc:
+  server:
+    port: 0
+    security:
+      enabled: false
 
 app:
   kafka:
@@ -28,8 +29,6 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map:
-      grpcPort: ${spring.grpc.server.port:40612}
 
 logging:
   level:

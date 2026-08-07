@@ -12,10 +12,13 @@ spring:
       group-id: aggregator-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
-      # value-deserializer будет добавлен позже (кастомный Avro)
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       acks: all
+
+grpc:                        # ← добавьте
+  server:
+    port: 0                  # ← случайный порт
 
 app:
   kafka:
