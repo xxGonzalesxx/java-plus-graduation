@@ -7,7 +7,7 @@ spring:
     config:
       discovery:
         enabled: false
-      fail-fast: true
+      fail-fast: false
       retry:
         max-attempts: 6
         initial-interval: 2000

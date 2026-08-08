@@ -7,7 +7,7 @@ spring:
     config:
       discovery:
         enabled: false
-      fail-fast: true
+      fail-fast: false
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/category

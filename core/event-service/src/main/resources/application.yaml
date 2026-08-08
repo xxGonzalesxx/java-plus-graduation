@@ -7,7 +7,7 @@ spring:
     config:
       discovery:
         enabled: false
-      fail-fast: true
+      fail-fast: false
   main:
     allow-bean-definition-overriding: true
   datasource:
