@@ -14,4 +14,6 @@ public interface UserActionRepository extends JpaRepository<UserAction, Long> {
     List<UserAction> findByUserIdOrderByTimestampDesc(Long userId);
 
     List<UserAction> findByEventId(Long eventId);
+
+    List<UserAction> findByEventIdIn(List<Long> eventIds);
 }

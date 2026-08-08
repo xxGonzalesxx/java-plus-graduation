@@ -29,7 +29,6 @@ public class RecommendationService {
     public List<RecommendedEventProto> getRecommendationsForUser(long userId, int maxResults) {
         log.info("Getting recommendations for user: {}, maxResults: {}", userId, maxResults);
 
-        // 1. Получаем последние 20 мероприятий пользователя
         List<UserAction> userActions = userActionRepository
                 .findByUserIdOrderByTimestampDesc(userId)
                 .stream()
@@ -44,12 +43,24 @@ public class RecommendationService {
                 .map(UserAction::getEventId)
                 .collect(Collectors.toSet());
 
-        // 2. Для каждого мероприятия пользователя находим похожие
+        List<Long> eventIds = userActions.stream()
+                .map(UserAction::getEventId)
+                .distinct()
+                .toList();
+
+        List<EventSimilarity> allSimilarities = eventSimilarityRepository
+                .findByEventAInOrEventBIn(eventIds, eventIds);
+
+        Map<Long, List<EventSimilarity>> similarityMap = new HashMap<>();
+        for (EventSimilarity sim : allSimilarities) {
+            similarityMap.computeIfAbsent(sim.getEventA(), k -> new ArrayList<>()).add(sim);
+            similarityMap.computeIfAbsent(sim.getEventB(), k -> new ArrayList<>()).add(sim);
+        }
+
         Map<Long, Double> similarityScores = new HashMap<>();
 
         for (UserAction action : userActions) {
-            List<EventSimilarity> similarities = eventSimilarityRepository
-                    .findSimilarEvents(action.getEventId());
+            List<EventSimilarity> similarities = similarityMap.getOrDefault(action.getEventId(), Collections.emptyList());
 
             for (EventSimilarity sim : similarities) {
                 Long similarEventId = sim.getEventA().equals(action.getEventId())
@@ -61,7 +72,6 @@ public class RecommendationService {
             }
         }
 
-        // 3. Сортируем и возвращаем top-N
         return similarityScores.entrySet().stream()
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .limit(maxResults)
@@ -109,9 +119,15 @@ public class RecommendationService {
     public List<RecommendedEventProto> getInteractionsCount(List<Long> eventIds) {
         log.info("Getting interactions count for {} events", eventIds.size());
 
+        List<UserAction> allActions = userActionRepository.findByEventIdIn(eventIds);
+
+        Map<Long, List<UserAction>> actionsByEvent = allActions.stream()
+                .collect(Collectors.groupingBy(UserAction::getEventId));
+
         Map<Long, Double> result = new HashMap<>();
+
         for (Long eventId : eventIds) {
-            List<UserAction> actions = userActionRepository.findByEventId(eventId);
+            List<UserAction> actions = actionsByEvent.getOrDefault(eventId, Collections.emptyList());
 
             Map<Long, Double> userMaxWeights = new HashMap<>();
             for (UserAction action : actions) {

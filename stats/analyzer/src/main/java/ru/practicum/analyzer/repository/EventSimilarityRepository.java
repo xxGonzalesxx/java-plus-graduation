@@ -16,4 +16,6 @@ public interface EventSimilarityRepository extends JpaRepository<EventSimilarity
     List<EventSimilarity> findSimilarEvents(@Param("eventId") Long eventId);
 
     Optional<EventSimilarity> findByEventAAndEventB(Long eventA, Long eventB);
+
+    List<EventSimilarity> findByEventAInOrEventBIn(List<Long> eventAIds, List<Long> eventBIds);
 }

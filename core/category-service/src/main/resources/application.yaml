@@ -2,12 +2,12 @@ spring:
   application:
     name: category-service
   config:
-    import: "optional:configserver:"  # ← ПРАВИЛЬНО!
+    import: "optional:configserver:"
   cloud:
     config:
       discovery:
         enabled: false
-      fail-fast: false
+      fail-fast: true
   datasource:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/category
