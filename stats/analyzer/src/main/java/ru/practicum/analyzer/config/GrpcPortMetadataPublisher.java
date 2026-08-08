@@ -24,6 +24,7 @@ public class GrpcPortMetadataPublisher {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("grpcPort", String.valueOf(grpcPort));
+        metadata.put("gRPC.port", String.valueOf(grpcPort));
         applicationInfoManager.registerAppMetadata(metadata);
     }
 }
