@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS events (
     initiator_id BIGINT NOT NULL,
     lat FLOAT,
     lon FLOAT,
+    rating DOUBLE PRECISION DEFAULT 0.0,
     CONSTRAINT pk_event PRIMARY KEY (id)
 );
 CREATE TABLE IF NOT EXISTS compilations (

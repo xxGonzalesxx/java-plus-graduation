@@ -136,7 +136,7 @@ public class CompilationServiceImpl implements CompilationService {
             if (comDto.events() != null) {
                 comDto.events().forEach(shortDto -> {
                     shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(shortDto.getId(), 0L));
-                    shortDto.setViews(viewsMap.getOrDefault(shortDto.getId(), 0L));
+                    shortDto.setRating((double) viewsMap.getOrDefault(shortDto.getId(), 0L));
                 });
             }
         });

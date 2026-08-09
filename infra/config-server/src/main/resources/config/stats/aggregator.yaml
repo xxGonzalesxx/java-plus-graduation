@@ -1,0 +1,37 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: aggregator-service
+  kafka:
+    bootstrap-servers: kafka:29092
+    consumer:
+      group-id: aggregator-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      acks: all
+
+grpc:                        # ← добавьте
+  server:
+    port: 0                  # ← случайный порт
+
+app:
+  kafka:
+    topics:
+      user-actions: stats.user-actions.v1
+      events-similarity: stats.events-similarity.v1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    ru.practicum: DEBUG
+    org.springframework.kafka: INFO

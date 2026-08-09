@@ -57,6 +57,9 @@ public class Event {
     @Embedded
     private Location location;
 
+    @Column(name = "rating")
+    private Double rating;
+
     @PrePersist
     public void prePersist() {
         if (createdOn == null) createdOn = LocalDateTime.now();

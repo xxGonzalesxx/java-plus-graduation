@@ -1,0 +1,29 @@
+package ru.practicum.aggregator.config;
+
+import com.netflix.appinfo.ApplicationInfoManager;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.grpc.server.lifecycle.GrpcServerStartedEvent;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class AggregatorGrpcPortRegistratio {
+
+    private final ApplicationInfoManager applicationInfoManager;
+
+    @EventListener
+    public void onGrpcServerStarted(GrpcServerStartedEvent event) {
+        int grpcPort = event.getPort();
+        log.info("Aggregator: Updating Eureka metadata with gRPC port: {}", grpcPort);
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("gRPC.port", String.valueOf(grpcPort));
+        applicationInfoManager.registerAppMetadata(metadata);
+    }
+}

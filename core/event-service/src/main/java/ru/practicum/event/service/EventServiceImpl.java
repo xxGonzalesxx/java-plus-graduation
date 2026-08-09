@@ -13,6 +13,7 @@ import ru.practicum.HitDto;
 import ru.practicum.ParamDto;
 import ru.practicum.StatsDto;
 import ru.practicum.dto.CategoryDto;
+import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.dto.UserShortDto;
 import ru.practicum.event.client.CategoryClient;
 import ru.practicum.event.client.RequestClient;
@@ -28,8 +29,8 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.EventRequestStatusUpdateResult;
-import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.model.EventState;
+import ru.practicum.model.ParticipationStatus;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -107,7 +108,7 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(getConfirmedRequestsCount(eventId));
-        fullDto.setViews(getViews(paramDto));
+        fullDto.setRating((double) getViews(paramDto));
         setCategoryAndInitiator(fullDto, event);
 
         return fullDto;
@@ -226,7 +227,7 @@ public class EventServiceImpl implements EventService {
         List<EventShortDto> shortsDto = buildShortDtoListWithMaps(filteredEvents, confirmedRequestsMap, viewsMap);
 
         if (eventParamDto.sort() != null && eventParamDto.sort().equalsIgnoreCase("VIEWS")) {
-            shortsDto.sort(Comparator.comparing(EventShortDto::getViews).reversed());
+            shortsDto.sort(Comparator.comparing(EventShortDto::getRating).reversed());
         }
 
         log.info("Получен список запросов по указанным фильтрам");
@@ -251,7 +252,7 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(getConfirmedRequestsCount(id));
-        fullDto.setViews(getViews(paramDto));
+        fullDto.setRating((double) getViews(paramDto));
         setCategoryAndInitiator(fullDto, event);
 
         log.info("Получено событие с id = {}", id);
@@ -307,7 +308,7 @@ public class EventServiceImpl implements EventService {
                 .map(e -> {
                     EventFullDto fullDto = eventMapper.toFullDto(e);
                     fullDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
-                    fullDto.setViews(viewsMap.getOrDefault(e.getId(), 0L));
+                    fullDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
                     fullDto.setCategory(categoryMap.get(e.getCategoryId()));
                     fullDto.setInitiator(userMap.get(e.getInitiatorId()));
                     return fullDto;
@@ -410,13 +411,15 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto fullDto = eventMapper.toFullDto(event);
         fullDto.setConfirmedRequests(confirmedRequests);
-        fullDto.setViews(views);
+        fullDto.setRating((double) views);
         setCategoryAndInitiator(fullDto, event);
 
         log.info("Internal: event {} returned with status {}", eventId, event.getState());
 
         return fullDto;
     }
+
+    // ==================== ПРИВАТНЫЕ МЕТОДЫ ====================
 
     private UserShortDto checkUserExists(Long userId) {
         try {
@@ -535,7 +538,7 @@ public class EventServiceImpl implements EventService {
         fullDto.setCategory(category);
         fullDto.setInitiator(initiator);
         fullDto.setConfirmedRequests(0L);
-        fullDto.setViews(0L);
+        fullDto.setRating(0.0);
         return fullDto;
     }
 
@@ -555,7 +558,7 @@ public class EventServiceImpl implements EventService {
                 .map(e -> {
                     EventShortDto shortDto = eventMapper.toShortDto(e);
                     shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
-                    shortDto.setViews(viewsMap.getOrDefault(e.getId(), 0L));
+                    shortDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
                     shortDto.setCategory(categoryMap.get(e.getCategoryId()));
                     shortDto.setInitiator(userMap.get(e.getInitiatorId()));
                     return shortDto;
@@ -583,18 +586,13 @@ public class EventServiceImpl implements EventService {
     public List<ParticipationRequestDto> getRequestsOfEvent(Long userId, Long eventId) {
         log.info("Getting requests for event id={} by user id={}", eventId, userId);
 
-        // Проверяем, что пользователь существует
         checkUserExists(userId);
-
-        // Проверяем, что событие существует
         Event event = getEventOrThrow(eventId);
 
-        // Проверяем, что пользователь является инициатором события
         if (!event.getInitiatorId().equals(userId)) {
             throw new ConflictException("User is not the initiator of this event");
         }
 
-        // Получаем запросы через RequestClient
         try {
             return requestClient.getRequestsByEventId(eventId);
         } catch (Exception e) {
@@ -612,23 +610,17 @@ public class EventServiceImpl implements EventService {
 
         log.info("Updating requests status for event id={} by user id={}", eventId, userId);
 
-        // Проверяем, что пользователь существует
         checkUserExists(userId);
-
-        // Проверяем, что событие существует
         Event event = getEventOrThrow(eventId);
 
-        // Проверяем, что пользователь является инициатором события
         if (!event.getInitiatorId().equals(userId)) {
             throw new ConflictException("User is not the initiator of this event");
         }
 
-        // Проверяем, что событие опубликовано
         if (event.getState() != EventState.PUBLISHED) {
             throw new ConflictException("Event is not published");
         }
 
-        // Проверяем лимит участников
         if (event.getParticipantLimit() > 0) {
             Long confirmedCount = getConfirmedRequestsCount(eventId);
             if (confirmedCount >= event.getParticipantLimit()) {
@@ -636,12 +628,55 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        // Обновляем статусы запросов через RequestClient
         try {
             return requestClient.updateRequests(request);
         } catch (Exception e) {
             log.error("Failed to update requests for event {}: {}", eventId, e.getMessage());
             throw new RuntimeException("Failed to update requests", e);
+        }
+    }
+
+    // ========== НОВЫЕ МЕТОДЫ ДЛЯ РЕКОМЕНДАЦИЙ ==========
+
+    @Override
+    public List<EventShortDto> getEventsByIds(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Event> events = eventRepository.findAllById(eventIds);
+
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(events);
+        Map<Long, Long> viewsMap = getViewsMap(events, false);
+        Map<Long, CategoryDto> categoryMap = getCategoryMap(events);
+        Map<Long, UserShortDto> userMap = getUserMap(events);
+
+        return events.stream()
+                .map(e -> {
+                    EventShortDto shortDto = eventMapper.toShortDto(e);
+                    shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(e.getId(), 0L));
+                    shortDto.setRating((double) viewsMap.getOrDefault(e.getId(), 0L));
+                    shortDto.setCategory(categoryMap.get(e.getCategoryId()));
+                    shortDto.setInitiator(userMap.get(e.getInitiatorId()));
+                    return shortDto;
+                })
+                .toList();
+    }
+
+    @Override
+    public void validateUserParticipation(Long userId, Long eventId) {
+        try {
+            List<ParticipationRequestDto> requests = requestClient.getRequestsByEventId(eventId);
+            boolean participated = requests.stream()
+                    .anyMatch(r -> r.requester().equals(userId) &&
+                            ParticipationStatus.CONFIRMED.equals(r.status()));
+
+            if (!participated) {
+                throw new ValidationException("User must participate in event to like it");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to check user participation: {}", e.getMessage());
+            throw new ValidationException("User must participate in event to like it");
         }
     }
 }

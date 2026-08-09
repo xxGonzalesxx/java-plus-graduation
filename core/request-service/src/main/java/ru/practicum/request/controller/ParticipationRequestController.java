@@ -1,13 +1,11 @@
 package ru.practicum.request.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.dto.EventRequestStatusUpdateResult;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.request.client.RecommendationClient;
 import ru.practicum.request.dto.NewRequestDto;
 import ru.practicum.dto.ParticipationRequestDto;
 import ru.practicum.request.service.ParticipationRequestService;
@@ -19,7 +17,9 @@ import java.util.List;
 @RequestMapping("/users")
 @Slf4j
 public class ParticipationRequestController {
+
     private final ParticipationRequestService requestService;
+    private final RecommendationClient recommendationClient;
 
     @PostMapping("/{userId}/requests")
     @ResponseStatus(HttpStatus.CREATED)
@@ -38,6 +38,8 @@ public class ParticipationRequestController {
             throw new ValidationException("eventId is required");
         }
 
+        recommendationClient.sendRegister(userId, eventId);
+
         return requestService.addRequest(userId, eventId);
     }
 
@@ -52,6 +54,9 @@ public class ParticipationRequestController {
     public ParticipationRequestDto addRequestDirect(@PathVariable Long userId,
                                                     @PathVariable Long eventId) {
         log.info("POST /users/{}/events/{}/requests", userId, eventId);
+
+        recommendationClient.sendRegister(userId, eventId);
+
         return requestService.addRequest(userId, eventId);
     }
 
@@ -60,21 +65,5 @@ public class ParticipationRequestController {
                                                  @PathVariable Long requestId) {
         log.info("PATCH /users/{}/requests/{}/cancel", userId, requestId);
         return requestService.cancelRequest(userId, requestId);
-    }
-
-    @GetMapping("/{userId}/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventRequests(@PathVariable Long userId,
-                                                          @PathVariable Long eventId) {
-        log.info("GET /users/{}/events/{}/requests", userId, eventId);
-        return requestService.getEventRequests(userId, eventId);
-    }
-
-    @PatchMapping("/{userId}/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult updateRequestStatus(
-            @PathVariable Long userId,
-            @PathVariable Long eventId,
-            @Valid @RequestBody EventRequestStatusUpdateRequest requestUpdate) {
-        log.info("PATCH /users/{}/events/{}/requests", userId, eventId);
-        return requestService.updateRequestStatus(userId, eventId, requestUpdate);
     }
 }

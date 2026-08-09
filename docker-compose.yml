@@ -1,4 +1,6 @@
 services:
+  # ============ СУЩЕСТВУЮЩИЕ БАЗЫ ДАННЫХ ============
+
   stats-db:
     image: postgres:18.4
     container_name: stats-db
@@ -15,6 +17,8 @@ services:
       retries: 10
     volumes:
       - stats-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
 
   user-db:
     image: postgres:18.4
@@ -32,6 +36,8 @@ services:
       retries: 10
     volumes:
       - user-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
 
   event-db:
     image: postgres:18.4
@@ -49,6 +55,8 @@ services:
       retries: 10
     volumes:
       - event-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
 
   category-db:
     image: postgres:18.4
@@ -66,6 +74,8 @@ services:
       retries: 10
     volumes:
       - category-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
 
   comment-db:
     image: postgres:18.4
@@ -83,6 +93,8 @@ services:
       retries: 10
     volumes:
       - comment-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
 
   request-db:
     image: postgres:18.4
@@ -100,6 +112,384 @@ services:
       retries: 10
     volumes:
       - request-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
+
+  # ============ НОВАЯ БАЗА ДЛЯ ANALYZER ============
+
+  analyzer-db:
+    image: postgres:18.4
+    container_name: analyzer-db
+    ports:
+      - "5438:5432"
+    environment:
+      - POSTGRES_DB=analyzer
+      - POSTGRES_USER=analyzer
+      - POSTGRES_PASSWORD=analyzer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -q -d analyzer -U analyzer"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    volumes:
+      - analyzer-db-data:/var/lib/postgresql
+    networks:
+      - explore-with-me
+
+  # ============ KAFKA ИНФРАСТРУКТУРА (APACHE KAFKA, KRAFT, БЕЗ ZOOKEEPER) ============
+
+  kafka:
+    image: apache/kafka:3.7.1
+    container_name: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    networks:
+      - explore-with-me
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:29092 --list || exit 1"]
+      timeout: 10s
+      interval: 10s
+      retries: 10
+      start_period: 20s
+
+  kafka-init:
+    image: apache/kafka:3.7.1
+    container_name: kafka-init
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      echo 'Creating topics...'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic stats.user-actions.v1 --partitions 3 --replication-factor 1
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic stats.events-similarity.v1 --partitions 3 --replication-factor 1
+      echo 'Topics created successfully!'
+      echo 'Listing topics:'
+      /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --list
+    networks:
+      - explore-with-me
+
+  # ============ ИНФРАСТРУКТУРНЫЕ СЕРВИСЫ ============
+
+  config-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: infra/config-server
+        ARTIFACT_NAME: config-server
+    container_name: config-server
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SERVER_PORT: "8888"
+    ports:
+      - "8888:8888"
+    networks:
+      - explore-with-me
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 20
+      start_period: 60s
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: infra/discovery-server
+        ARTIFACT_NAME: discovery-server
+    container_name: discovery-server
+    # depends_on config-server removed to avoid circular startup dependency
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+    ports:
+      - "8761:8761"
+    networks:
+      - explore-with-me
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 20
+      start_period: 60s
+
+  gateway-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: infra/gateway-server
+        ARTIFACT_NAME: gateway-server
+    container_name: gateway-server
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CLOUD_CONFIG_URI=http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    ports:
+      - "8080:8080"
+    networks:
+      - explore-with-me
+
+  # ============ НОВЫЕ СЕРВИСЫ РЕКОМЕНДАТЕЛЬНОЙ СИСТЕМЫ ============
+
+  collector-service:
+    build:
+      context: ./stats/collector-service
+      dockerfile: Dockerfile
+    container_name: collector-service
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    ports:
+      - "8088:8088"
+    networks:
+      - explore-with-me
+
+  aggregator-service:
+    build:
+      context: ./stats/aggregator-service
+      dockerfile: Dockerfile
+    container_name: aggregator-service
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+    ports:
+      - "8089:8089"
+    networks:
+      - explore-with-me
+
+  analyzer-service:
+    build:
+      context: ./stats/analyzer-service
+      dockerfile: Dockerfile
+    container_name: analyzer-service
+    depends_on:
+      analyzer-db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_CONFIG_IMPORT: "optional:configserver:"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://analyzer-db:5432/analyzer"
+      SPRING_DATASOURCE_USERNAME: "analyzer"
+      SPRING_DATASOURCE_PASSWORD: "analyzer"
+    ports:
+      - "8090:8090"
+    networks:
+      - explore-with-me
+
+  # ============ CORE СЕРВИСЫ ============
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: core/user-service
+        ARTIFACT_NAME: user-service
+    container_name: user-service
+    depends_on:
+      user-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://user-db:5432/user"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+    networks:
+      - explore-with-me
+
+  category-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: core/category-service
+        ARTIFACT_NAME: category-service
+    container_name: category-service
+    depends_on:
+      category-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://category-db:5432/category"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+    networks:
+      - explore-with-me
+
+  event-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: core/event-service
+        ARTIFACT_NAME: event-service
+    container_name: event-service
+    depends_on:
+      event-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      collector-service:
+        condition: service_started
+      analyzer-service:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://event-db:5432/event"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector"
+      GRPC_CLIENT_ANALYZER_ADDRESS: "discovery:///analyzer-service"
+    networks:
+      - explore-with-me
+
+  request-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: core/request-service
+        ARTIFACT_NAME: request-service
+    container_name: request-service
+    depends_on:
+      request-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      collector-service:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://request-db:5432/request"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+      GRPC_CLIENT_COLLECTOR_ADDRESS: "discovery:///collector"
+    networks:
+      - explore-with-me
+
+  comment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: core/comment-service
+        ARTIFACT_NAME: comment-service
+    container_name: comment-service
+    depends_on:
+      comment-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://comment-db:5432/comment"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+    networks:
+      - explore-with-me
+
+  # ============ СТАРЫЙ STATS-SERVER (ПОКА ОСТАВЛЯЕМ) ============
+
+  stats-server:
+    build:
+      context: ./stats/stats-server
+      dockerfile: Dockerfile
+    container_name: stats-server
+    depends_on:
+      stats-db:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: "docker"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery-server:8761/eureka/"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://stats-db:5432/stats"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+    ports:
+      - "9090:9090"
+    networks:
+      - explore-with-me
+
+networks:
+  explore-with-me:
+    driver: bridge
 
 volumes:
   stats-db-data:
@@ -108,3 +498,4 @@ volumes:
   category-db-data:
   comment-db-data:
   request-db-data:
+  analyzer-db-data:
